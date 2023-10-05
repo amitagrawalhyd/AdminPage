@@ -30,7 +30,7 @@ import {
   SubMenu,
   useProSidebar,
 } from "react-pro-sidebar";
-import { Routes, Route, Link, useLocation } from "react-router-dom";
+import { Routes, Route, Link, useLocation, Navigate } from "react-router-dom";
 import Login from "./pages/login/Login";
 import Dashboard from "./components/Dashboard";
 import Transactions from "./components/Transactions";
@@ -39,6 +39,9 @@ import AddUser from "./components/User/AddUser";
 import CouponHistory from "./components/CouponHistory";
 import Notifications from "./components/Notifications";
 import ManualEntry from "./components/ManualEntry";
+import Cookies from 'js-cookie';
+import {useNavigate } from "react-router-dom";
+
 const Home = () => {
   return (
     <>
@@ -53,6 +56,10 @@ const App = () => {
   const location = useLocation();
   // console.log(location.pathname);
   const { collapseSidebar } = useProSidebar();
+  const token = Cookies.get('token');
+  const navigate = useNavigate();
+
+  console.log('token from login:',token)
 
   return (
     <div
@@ -80,12 +87,22 @@ const App = () => {
               Dashboard
             </MenuItem>
 
-            {/* <SubMenu label="Coupons" icon={<WalletRoundedIcon />}>
-              <MenuItem icon={<AccountBalanceRoundedIcon />}>
-                Coupon History
-              </MenuItem>
-              <MenuItem icon={<SavingsRoundedIcon />}>Manual Entry</MenuItem>
-            </SubMenu> */}
+            <SubMenu label="Coupons" icon={<WalletRoundedIcon />}>
+            <MenuItem
+              component={<Link to="couponhistory" className="link" />}
+              icon={<HistoryIcon />}
+            >
+              CouponHistory
+            </MenuItem>
+              
+            <MenuItem
+              component={<Link to="manualentry" className="link" />}
+              icon={<KeyboardIcon />}
+            >
+              {" "}
+              Manual Entry{" "}
+            </MenuItem>
+            </SubMenu>
             <MenuItem
               component={<Link to="transactions" className="link" />}
               icon={<MonetizationOnRoundedIcon />}
@@ -108,23 +125,10 @@ const App = () => {
                 {" "}
                 Add User{" "}
               </MenuItem>
-              <MenuItem icon={<ManageAccountsIcon />}>Edit User</MenuItem>
+              <MenuItem icon={<ManageAccountsIcon />}> Edit User </MenuItem>
             </SubMenu>
 
-            <MenuItem
-              component={<Link to="couponhistory" className="link" />}
-              icon={<HistoryIcon />}
-            >
-              CouponHistory
-            </MenuItem>
 
-            <MenuItem
-              component={<Link to="manualentry" className="link" />}
-              icon={<KeyboardIcon />}
-            >
-              {" "}
-              Manual Entry{" "}
-            </MenuItem>
             <MenuItem
               component={<Link to="notifications" className="link" />}
               icon={<NotificationsNoneIcon />}
@@ -132,14 +136,23 @@ const App = () => {
               {" "}
               Notifications{" "}
             </MenuItem>
-            <MenuItem icon={<LogoutRoundedIcon />}> Logout </MenuItem>
+            <MenuItem
+                onClick={() => {
+                  // Cookies.remove('token');
+                  console.log('token after logout:',token)
+                  // navigate("/");
+                }}
+            icon={<LogoutRoundedIcon />}> Logout </MenuItem>
           </Menu>
         </Sidebar>
       )}
       {/* routes */}
-      <section className={(location.pathname == "/"? "" : "section")}>
+      <section className={location.pathname == "/"? "" : "section"}>
         <Routes>
+        {/* {!token ? ( */}
           <Route path="/" element={<Login />} />
+        // ) : (
+          <>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="transactions" element={<Transactions />} />
           <Route path="userlist" element={<UserList />} />
@@ -147,6 +160,9 @@ const App = () => {
           <Route path="couponhistory" element={<CouponHistory />} />
           <Route path="manualentry" element={<ManualEntry />} />
           <Route path="notifications" element={<Notifications />} />
+          <Route path="*" element={<pagenotfound />} />
+          </>
+         {/* )} */}
         </Routes>
       </section>
     </div>

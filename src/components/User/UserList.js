@@ -25,7 +25,7 @@ export default function UserList() {
 
   return (
     <div>
-      <h1 className="header">User List</h1>
+      <h4 className="header mb-2">User List</h4>
 
       <table className="table table-striped ">
         <thead style={{justifyContent:'center'}}>
