@@ -104,8 +104,8 @@ const Dashboard = () => {
                   <tr>
                     <td>{dashboardDetails?.scannedCoupons[0]?.faceValue}</td>
                     <td>{dashboardDetails?.scannedCoupons[0]?.scannedCount}</td>
-                    <td>{dashboardDetails.transaction?.transactionAmount}</td>
                     <td>{dashboardDetails?.expiredCoupons.length}</td>
+                    <td>{dashboardDetails.transaction?.transactionAmount}</td>
                   </tr>
                   <tr>
                   <td>{dashboardDetails?.scannedCoupons[1]?.faceValue}</td>
@@ -124,7 +124,6 @@ const Dashboard = () => {
           </div>
         </div>
         </div>
-
     </div>
 }
     </>

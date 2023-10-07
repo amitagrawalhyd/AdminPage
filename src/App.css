@@ -16,6 +16,10 @@ section{
 button, p, span, label, th, td{
   font-size: 14px;
 }
+.cust_dropdown{
+/* height:min-content */
+padding: 5px 40px 8px 10px;
+}
 .dropdown-item{
   font-size: 14px;
 }
@@ -42,7 +46,7 @@ svg{
 
 
 .form_transaction input{
-  width:200px;
+  width:180px;
 }
 .form_transaction label{
   font-size: 14px;
