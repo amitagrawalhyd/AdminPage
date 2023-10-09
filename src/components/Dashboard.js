@@ -7,7 +7,7 @@ import { Constants } from "../constants/credentials";
 
 import { getCurrentDate } from "../components/currentDate";
 import Loader from "react-js-loader";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams,useLocation } from "react-router-dom";
 
 var isEmpty = require("lodash.isempty");
 
@@ -21,10 +21,12 @@ const Dashboard = () => {
   const [dashboardDetails, setDashboardDetails] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
-  // const mobileNumber = searchParams.get("mobileNumber");
-  // const token = searchParams.get("token");
 
-  console.log("mobile number form search params:",mobileNumber,token)
+  // const {state} = useLocation();
+  // const { mobileNumber, token } = state; // Read values passed on state
+
+
+  console.log("state params:",mobileNumber,token);
 
   // const [selected, setSelected] = React.useState();
 

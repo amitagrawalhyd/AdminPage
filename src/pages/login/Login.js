@@ -29,7 +29,8 @@ export default function Login() {
         if (responseData.validationResult) {
           Cookies.set("token",responseData.token);
           Cookies.set("mobileNumber",mobileNumber);
-          navigate("/dashboard");
+          // navigate("/dashboard");
+          navigate('/dashboard', { state: { mobileNumber: mobileNumber, token: responseData.token } });
 
           // navigate({
           //   pathname: '/dashboard',

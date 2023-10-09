@@ -12,10 +12,24 @@ export default function UserList() {
   const [registrations, setRegistrations] = useState([]); // users
   const [registrationTypes, setRegistrationTypes] = useState([]); // types of registrations (distributor,dealer,mechanic)
   const [adminDetails, setAdminDetails] = useState([]); // admin details
-  let heading = ["Mobile Number", "Name", "City", "User type"];
+  let heading = ["Mobile Number", "Name", "City", "User type","Actions"];
   const options = ["All", "Company", "Distributer", "Dealer", "Mechanic"]; //for dropdown
   const [selected, setSelected] = useState(options[0]); //default value of dropdown
   const defaultOption = options[0]; //dropdown menu default option
+  const [initialValues, setInitialValues] = useState({
+    dropdown: "----",
+    mobileNumber: "",
+    name: "",
+    address1: "",
+    address2: "",
+    city: "",
+    state: "",
+    pincode: "",
+    upiAddress: "",
+    aadhaarNumber: "",
+    panNumber: "",
+  });
+  const [editMode,setEditMode] = useState(false);
 
   var adminRegistrationId = 0;
 
@@ -32,7 +46,7 @@ export default function UserList() {
     const data = await resp.json();
     setRegistrations(data);
   };
-  // console.log("registrations:", registrations);
+  console.log("registrations:", registrations);
   const getAdminDetails = async () => {
     const resp = await fetch(
       `http://183.83.219.144:81/LMS/Registration/GetRegistrations/${companyId}?mobileNumber=${storedMobileNumber}`,
@@ -94,8 +108,43 @@ export default function UserList() {
   // console.log('selected from user list:',selected)
 
   function handleEdit(user) {
-    console.log("user to be edited", user);
+    // console.log("user to be edited", user);
+    setEditMode(true);
+    setInitialValues({
+      dropdown: user.registrationTypeExtId,
+      mobileNumber: user.registerMobileNumber,
+      name: user.registerName,
+      address1: user.registerAddress1,
+      address2: user.registerAddress2,
+      city: user.city,
+      state: user.state,
+      pincode: user.pinCode,
+      upiAddress: user.upiAddress,
+      aadhaarNumber: user.adhaarNumber,
+      panNumber: user.panNumber,
+    })
+    console.log("initialValues",initialValues)
     // formik.handleSubmit(user);
+  }
+
+  function handleDeleteOrRestore(user) {
+  user.isActive = user.isActive ?  false : true;
+    // console.log('user status before:',user.isActive);
+    user.isActive ? alert("user ",user.registerName," restored") : alert("user ",user.registerName," deleted")
+    
+    fetch(`http://183.83.219.144:81/LMS/Registration/SaveRegistration`, {
+      method: "POST",
+      headers: new Headers({
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      }),
+      body: JSON.stringify(user),
+    })
+      .then((response) => response.json())
+      .then((responseData) => {
+        console.log("response from delete user:", responseData);
+      })
+      .catch((error) => console.log(error));
   }
 
   function filterUsers(user) {
@@ -138,23 +187,12 @@ export default function UserList() {
   };
 
   const formik = useFormik({
-    initialValues: {
-      dropdown: "----",
-      mobileNumber: "",
-      name: "",
-      address1: "",
-      address2: "",
-      city: "",
-      state: "",
-      pincode: "",
-      upiAddress: "",
-      aadhaarNumber: "",
-      panNumber: "",
-    },
-    // enableReinitialize : true,
+    initialValues: initialValues,
+    enableReinitialize : true,
     validate,
     onSubmit: (values) => {
       console.log(JSON.stringify(values));
+      alert('submitted successfully')
       // console.log(registrationTypeExtId);
       // console.log('admin id onsubmit:',adminRegistrationId,"user type:",registrationTypeExtId);
 
@@ -199,7 +237,7 @@ export default function UserList() {
 
   return (
     <div style={{ width: "100%", display: "flex", flexDirection: "row" }}>
-      <div style={{ width: "60%" }}>
+      <div style={{ width: "70%" }}>
         <h4 className="header mb-2">User List</h4>
         <Dropdown
           className="user_dropdown"
@@ -224,14 +262,15 @@ export default function UserList() {
                 <td className="user">{user.city}</td>
                 <td className="user">{user.registrationType}</td>
                 <td>
-                  <button onClick={() => handleEdit(user)}>Edit</button>
+                  <button className="btn btn-secondary" onClick={() => handleEdit(user)}>Edit</button>
+                  <button type="submit" className={ user.isActive ? "btn btn-danger ml-2" : "btn btn-success ml-2"} onClick={() => handleDeleteOrRestore(user)}>{user.isActive ? "Delete" : "Restore" }</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <div style={{ width: "40%" }}>
+      <div style={{ width: "30%" }}>
         <form onSubmit={formik.handleSubmit}>
           {/* <Dropdown
           className="user_dropdown"
@@ -240,21 +279,26 @@ export default function UserList() {
           value="-----"
           // placeholder="Select an option"
         /> */}
-        <label>Select type of user:</label>
+          <label>Select type of user:</label>
           <select
             value={formik.values.dropdown}
             name="dropdown"
             onChange={formik.handleChange}
+            disabled={editMode}
           >
             {registrationTypes?.map((type) => {
               return (
+                <>
+                {type.registrationTypeName != "Company" &&
                 <option
                   key={type.registrationTypeExtId}
                   value={type.registrationTypeExtId}
                 >
-                  {type.registrationTypeName != "Company" &&
-                    type.registrationTypeName}
+                    {type.registrationTypeName}
                 </option>
+
+              }
+                </>
               );
             })}
           </select>
@@ -268,6 +312,7 @@ export default function UserList() {
             type="mobileNumber"
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
+            disabled={editMode}
             value={formik.values.mobileNumber}
           />
           {formik.touched.mobileNumber && formik.errors.mobileNumber ? (
@@ -332,7 +377,7 @@ export default function UserList() {
             onBlur={formik.handleBlur}
             value={formik.values.pincode}
           />
-                    {formik.touched.pincode && formik.errors.pincode ? (
+          {formik.touched.pincode && formik.errors.pincode ? (
             <p style={{ color: "red" }}>{formik.errors.pincode}</p>
           ) : null}
           <br />
@@ -367,7 +412,7 @@ export default function UserList() {
             value={formik.values.panNumber}
           />
           <br />
-          <button type="submit">Submit</button>
+          <button className="btn btn-primary" type="submit">Submit</button>
         </form>
       </div>
     </div>
