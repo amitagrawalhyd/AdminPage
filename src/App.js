@@ -1,3 +1,4 @@
+import React,{createContext} from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
@@ -22,6 +23,8 @@ import PersonIcon from "@mui/icons-material/Person";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import KeyboardIcon from "@mui/icons-material/Keyboard";
 import HistoryIcon from "@mui/icons-material/History";
+import PendingActionsIcon from '@mui/icons-material/PendingActions';
+
 
 import {
   Sidebar,
@@ -39,6 +42,7 @@ import AddUser from "./components/User/AddUser";
 import CouponHistory from "./components/CouponHistory";
 import Notifications from "./components/Notifications";
 import ManualEntry from "./components/ManualEntry";
+import PendingTransactions from './components/PendingTransactions';
 import Cookies from 'js-cookie';
 import {useNavigate } from "react-router-dom";
 
@@ -59,7 +63,7 @@ const App = () => {
   const token = Cookies.get('token');
   const navigate = useNavigate();
 
-  console.log('token from login:',token)
+  // console.log('token from login:',token)
 
   return (
     <div
@@ -103,14 +107,24 @@ const App = () => {
               Manual Entry{" "}
             </MenuItem>
             </SubMenu>
+            <SubMenu label="Transactions" icon={<MonetizationOnRoundedIcon />}>
             <MenuItem
               component={<Link to="transactions" className="link" />}
-              icon={<MonetizationOnRoundedIcon />}
+              icon={<PendingActionsIcon />}
             >
-              Transactions
+             List of Transactions
             </MenuItem>
+            <MenuItem
+              component={<Link to="pendingtransactions" className="link" />}
+              icon={<PendingActionsIcon />}
+            >
+              Pending Transactions
+            </MenuItem>
+              
+            </SubMenu>
 
-            <SubMenu label="User" icon={<PersonIcon />}>
+
+            {/* <SubMenu label="User" icon={<PersonIcon />}> */}
               <MenuItem
                 component={<Link to="userlist" className="link" />}
                 icon={<PeopleAltIcon />}
@@ -118,15 +132,15 @@ const App = () => {
                 {" "}
                 User List{" "}
               </MenuItem>
-              <MenuItem
+              {/* <MenuItem
                 component={<Link to="adduser" className="link" />}
                 icon={<PersonAddAltIcon />}
               >
                 {" "}
                 Add User{" "}
-              </MenuItem>
-              <MenuItem icon={<ManageAccountsIcon />}> Edit User </MenuItem>
-            </SubMenu>
+              </MenuItem> */}
+              {/* <MenuItem icon={<ManageAccountsIcon />}> Edit User </MenuItem> */}
+            {/* </SubMenu> */}
 
 
             <MenuItem
@@ -148,6 +162,7 @@ const App = () => {
       )}
       {/* routes */}
       <section className={location.pathname == "/"? "" : "section"}>
+        
         <Routes>
         {/* {!token ? ( */}
           <Route path="/" element={<Login />} />
@@ -159,6 +174,7 @@ const App = () => {
           <Route path="adduser" element={<AddUser />} />
           <Route path="couponhistory" element={<CouponHistory />} />
           <Route path="manualentry" element={<ManualEntry />} />
+          <Route path="pendingtransactions" element={<PendingTransactions />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="*" element={<pagenotfound />} />
           </>

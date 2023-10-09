@@ -1,7 +1,7 @@
 import './Login.css'
 import React, { useState } from "react";
 import { Constants } from "../../constants/credentials";
-import {useNavigate } from "react-router-dom";
+import {useNavigate,createSearchParams } from "react-router-dom";
 import Cookies from 'js-cookie';
 
 export default function Login() {
@@ -30,6 +30,12 @@ export default function Login() {
           Cookies.set("token",responseData.token);
           Cookies.set("mobileNumber",mobileNumber);
           navigate("/dashboard");
+
+          // navigate({
+          //   pathname: '/dashboard',
+          //   search: createSearchParams({ mobileNumber: mobileNumber}),
+          // });
+
         }
         else if(!responseData.validationResult){
           alert('Invalid credentials :(');

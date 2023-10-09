@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Constants } from "../constants/credentials";
+import Cookies from "js-cookie";
 const ManualEntry = () => {
   const [couponCode, setCouponCode] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
   const companyId = Constants.companyId;
-  const token = Constants.token;
+  const token = Cookies.get("token");
   function handleSubmit() {
     fetch(
       `http://183.83.219.144:81/LMS/Coupon/ConsumeManualCoupon/${companyId}/${couponCode}/${mobileNumber}`,
@@ -30,24 +31,32 @@ const ManualEntry = () => {
 
   return (
     <div>
-      <h1 className="header">Manual Entry</h1>
-      <p>Enter the coupon code manually</p>
-      <form onSubmit={handleSubmit}>
-        <label>Mobile Number:</label>
-        <input
-          type="text"
-          value={mobileNumber}
-          onChange={(e) => setMobileNumber(e.target.value)}
-        />
+      <h4 className="header mb-2">Manual Entry</h4>
+      <p className="mb-2">Enter the coupon code manually</p>
+      <form onSubmit={handleSubmit} className="form_transaction ">
+        <div style={{ display: "flex", flexDirection: "row" }}>
+          <label className="mb-0">Mobile Number:</label>
+          <input
+            className="form-control mx-2 mb-2"
+            type="text"
+            value={mobileNumber}
+            onChange={(e) => setMobileNumber(e.target.value)}
+          />
+        </div>
+        <div style={{ display: "flex", flexDirection: "row" }}>
+          <label className="mb-0">Coupon Id:</label>
+          <input
+            className="form-control mx-2 "
+            type="text"
+            value={couponCode}
+            onChange={(e) => setCouponCode(e.target.value)}
+          />
+        </div>
+
         <br />
-        <label>Coupon Code:</label>
-        <input
-          type="text"
-          value={couponCode}
-          onChange={(e) => setCouponCode(e.target.value)}
-        />
-        <br />
-        <button type="submit">Submit</button>
+        <button className="btn btn-primary" type="submit">
+          Submit
+        </button>
       </form>
     </div>
   );

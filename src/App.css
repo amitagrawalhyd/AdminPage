@@ -23,6 +23,9 @@ padding: 5px 40px 8px 10px;
 .dropdown-item{
   font-size: 14px;
 }
+.user_dropdown{
+  width: 110px;
+}
 /* .sidebar{
   display: flex;
 } */

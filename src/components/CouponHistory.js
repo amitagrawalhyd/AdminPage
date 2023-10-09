@@ -12,10 +12,17 @@ const CouponHistory = () => {
   const companyId = Constants.companyId;
   const token = Constants.token;
   const [couponData, setCouponData] = useState([]);
-  let heading = ["Coupon Id","Coupon Value", "Mobile Number", "Name", "Date-Time"];
+  let heading = [
+    "Coupon Id",
+    "Coupon Value",
+    "Mobile Number",
+    "Name",
+    "Date-Time",
+  ];
 
   const [mobileNumber, setMobileNumber] = useState("");
   const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
   const { toPDF, targetRef } = usePDF({ filename: "coupon-history.pdf" }); //for pdf
   const tableRef = useRef(null); // for excel
 
@@ -28,6 +35,15 @@ const CouponHistory = () => {
     }${separator}${date}`;
   }
   const formattedStartDate = startDate && formatStartDate();
+  function formatEndDate(separator = "-") {
+    let date = endDate.getDate();
+    let month = endDate.getMonth() + 1;
+    let year = endDate.getFullYear();
+    return `${year}${separator}${
+      month < 10 ? `0${month}` : `${month}`
+    }${separator}${date}`;
+  }
+  const formattedEndDate = endDate && formatEndDate();
 
   useEffect(() => {
     getCouponHistory();
@@ -36,7 +52,7 @@ const CouponHistory = () => {
   const getCouponHistory = async () => {
     // console.log('loading data:', storedMobileNumber, storedToken);
     const resp = await fetch(
-      `http://183.83.219.144:81/LMS/Coupon/GetCouponTransactions/${companyId}??mobileNumber=${mobileNumber}&lastTransactionDateTime=${formattedStartDate}`,
+      `http://183.83.219.144:81/LMS/Coupon/GetCouponTransactions/${companyId}?mobileNumber=${mobileNumber}&startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
       {
         method: "GET",
         headers: new Headers({
@@ -72,10 +88,17 @@ const CouponHistory = () => {
           />
           <label className="mb-0">Start Date:</label>
           <DatePicker
-          className="form-control"
+            className="form-control"
             selected={startDate}
             dateFormat="yyyy/MM/dd"
             onChange={(date) => setStartDate(date)}
+          />
+          <label className="mb-0">End Date:</label>
+          <DatePicker
+            className="form-control"
+            selected={endDate}
+            dateFormat="yyyy/MM/dd"
+            onChange={(date) => setEndDate(date)}
           />
           <button
             type="button"
@@ -87,48 +110,52 @@ const CouponHistory = () => {
           </button>
         </div>
 
-        {couponData.length !=0 ?
-<div>
-        <div ref={targetRef}>
-          <table className="table  table-striped" ref={tableRef}>
-            <thead style={{ padding: 20, backgroundcolor: "red" }}>
-              <tr>
-                {heading.map((head, headID) => (
-                  <th key={headID}>{head}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {couponData
-                ?.sort((a, b) => b.changeDate.localeCompare(a.changeDate))
-                ?.map((coupon) => (
+        {couponData.length != 0 ? (
+          <div>
+            <div ref={targetRef}>
+              <table className="table  table-striped" ref={tableRef}>
+                <thead style={{ padding: 20, backgroundcolor: "red" }}>
                   <tr>
-                    <td className="coupon">{coupon.couponIdentity}</td>
-                    <td className="coupon">{coupon.faceValue}</td>
-                    <td className="coupon">{coupon.registerMobileNumber}</td>
-                    <td className="coupon"> {coupon.registerName}</td>
-                    <td className="coupon">{coupon.changeDate.replace("T", " ").split('.')[0]}</td>
+                    {heading.map((head, headID) => (
+                      <th key={headID}>{head}</th>
+                    ))}
                   </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
-        <div>
-          <button className="btn btn-secondary mb-2" onClick={onDownload}>
-            {" "}
-            Export to Excel{" "}
-          </button>
-          <button
-            className="btn btn-secondary mb-2 mx-2"
-            onClick={() => toPDF()}
-          >
-            Download PDF
-          </button>
-        </div>
-        </div>
-        :
-        "No records found"
-        }
+                </thead>
+                <tbody>
+                  {couponData
+                    ?.sort((a, b) => b.changeDate.localeCompare(a.changeDate))
+                    ?.map((coupon) => (
+                      <tr>
+                        <td className="coupon">{coupon.couponIdentity}</td>
+                        <td className="coupon">{coupon.faceValue}</td>
+                        <td className="coupon">
+                          {coupon.registerMobileNumber}
+                        </td>
+                        <td className="coupon"> {coupon.registerName}</td>
+                        <td className="coupon">
+                          {coupon.changeDate.replace("T", " ").split(".")[0]}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <button className="btn btn-secondary mb-2" onClick={onDownload}>
+                {" "}
+                Export to Excel{" "}
+              </button>
+              <button
+                className="btn btn-secondary mb-2 mx-2"
+                onClick={() => toPDF()}
+              >
+                Download PDF
+              </button>
+            </div>
+          </div>
+        ) : (
+          "No records found"
+        )}
       </div>
     </>
   );

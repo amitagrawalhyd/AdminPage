@@ -135,10 +135,6 @@ const Transactions = () => {
     else if (selected == "All"){
       return transaction;
     }
-
-    switch(selected){
-      case "pending": console.log('pending');
-    }
   }
 
   console.log('here;', filteredTransactions);

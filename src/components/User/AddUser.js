@@ -2,31 +2,61 @@ import React from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { Constants } from "../../constants/credentials";
+import Cookies from "js-cookie";
 
 class AddUser extends React.Component {
   // constructor(props) {
   //     super(props);
   //     this.handleSubmit = this.handleSubmit.bind(this);
   //   }
-  // token = Constants.token;
   handleSubmit(values) {
-    console.log(JSON.stringify(values, null, 2));
-
+    const token = Cookies.get('token');
+    console.log("token from add user:",token);
+    // console.log(JSON.stringify(values, null, 2));
+    console.log(values.name)
     fetch(
       `http://183.83.219.144:81/LMS/Registration/SaveRegistration`,
       {
         method: 'POST',
         headers: new Headers({
-          Authorization: `Bearer ${Constants.token}`,
+          Authorization: `Bearer ${token}`,
         }),
         body: JSON.stringify({
-          "registerName": values.name,
-          "registerMobileNumber":values.mobileNumber,
-          "registerAddress1":values.address1,
-          "registerAddress2":values.address2,
-          "city":values.city,
-          "state":values.state,
-          "pinCode":values.pinCode,
+            // "registrationId": 0,
+            // "companyId": 2,
+            // "registrationTypeId": 0,
+            // "registrationTypeExtId": 8,
+            // "registrationType": "Mechanic",
+            // "registerMobileNumber": "6451329780",
+            // "registerImeiNumber": "",
+            // "pin": "",
+            // "registerName": "Bill",
+            // "registerAddress1": "malakpet",
+            // "registerAddress2": "koti",
+            // "city": "Hyderabad",
+            // "state": "Telangana",
+            // "pinCode": "500016",
+            // "parentRegistrationId": 8,
+            // "walletValue": 0,
+            // "expiredWalletValue": 0,
+            // "paidValue": 0,
+            // "upiAddress": "",
+            // "adhaarNumber": "",
+            // "panNumber": "",
+            // "isActive": true
+
+
+          // "companyId":Constants.companyId,
+          // "registrationTypeExtId":8,
+          // "registerMobileNumber":values.mobileNumber,
+          // "registerName": values.name,
+          // "registerAddress1":values.address1,
+          // "registerAddress2":values.address2,
+          // "city":values.city,
+          // "state":values.state,
+          // "pinCode":values.pinCode,
+          // "parentRegistrationId":8,
+          // isActive:true
         }),
       },
     )
