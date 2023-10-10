@@ -6,7 +6,8 @@ const ManualEntry = () => {
   const [mobileNumber, setMobileNumber] = useState("");
   const companyId = Constants.companyId;
   const token = Cookies.get("token");
-  function handleSubmit() {
+  function handleSubmit(event) {
+    event.preventDefault();
     fetch(
       `http://183.83.219.144:81/LMS/Coupon/ConsumeManualCoupon/${companyId}/${couponCode}/${mobileNumber}`,
       {
@@ -18,6 +19,7 @@ const ManualEntry = () => {
     )
       .then((response) => response.json())
       .then((responseData) => {
+        console.log("manual entry coupon response:",responseData)
         if (responseData === true) {
           alert("Coupon Code posted successfully");
         } else if (responseData === false) {

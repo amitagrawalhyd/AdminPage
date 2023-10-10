@@ -78,7 +78,7 @@ export default function UserList() {
     setRegistrationTypes(data);
   };
 
-  // console.log('registration types:',registrationTypes);
+  // console.log('registration types:',registrationTypes,!registrationTypes.message);
   // const userTypes = [];
   // registrationTypes.forEach((type) => {
   //   if (type.registrationTypeName != "Company")

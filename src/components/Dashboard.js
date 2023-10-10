@@ -26,7 +26,7 @@ const Dashboard = () => {
   // const { mobileNumber, token } = state; // Read values passed on state
 
 
-  console.log("state params:",mobileNumber,token);
+  // console.log("state params:",mobileNumber,token);
 
   // const [selected, setSelected] = React.useState();
 
@@ -47,7 +47,7 @@ const Dashboard = () => {
   const getDetails = async () => {
     setLoading(true);
     const resp = await fetch(
-      `http://183.83.219.144:81/LMS/Coupon/CouponSummary/${companyId}/${mobileNumber}?startDate=${startDate}&endDate=${endDate} `, //?startDate=2023-8-1&endDate=2023-10-5
+      `http://183.83.219.144:81/LMS/Coupon/CouponSummary/${companyId}/${mobileNumber} `, //?startDate=${startDate}&endDate=${endDate}
       {
         method: "GET",
         headers: new Headers({
@@ -57,13 +57,14 @@ const Dashboard = () => {
     );
     const respJson = await resp.json();
     setDashboardDetails(respJson);
-    console.log("data", dashboardDetails);
+    console.log("dashboard details:", dashboardDetails.scannedCoupons);
     setLoading(false);
   };
 
   // console.log('dashboard details:',dashboardDetails);
   // Object.keys(dashboardDetails).forEach(function(key, index) {
-  //   console.log("dash",dashboardDetails);
+    // dashboardDetails.[key]
+    // console.log("dash",dashboardDetails?.[key]);
   // });
 
   return (
@@ -71,7 +72,7 @@ const Dashboard = () => {
       {loading ? (
         <Loader type="spinner-circle" />
       ) : (
-        <div>
+        <div >
           <div className="d-flex align-items-center justify-content-evenly form_transaction">
             <label className="mb-0">Start Date: </label>
             {/* <br /> */}
@@ -97,22 +98,25 @@ const Dashboard = () => {
               Submit
             </button>
           </div>
-          <div>
-            <div>
-              <h6 style={{ color: "black", marginBottom: 20 }}>
+
+            <div className="dashboard-container" >
+
+              {/* {dashboardDetails?.scannedCoupon} */}
+              <div >
+
+                  <div className="d-flex justify-content-around">
+                    <div className="scanned-container">
+                    {dashboardDetails.scannedCoupons && (
+                      <>
+                    <h6 style={{ color: "black", marginBottom: 10, borderBottom: '1px solid black' }}>
                 Scanned Coupons
               </h6>
-              {/* {dashboardDetails?.scannedCoupon} */}
-              <div className="d-flex justify-content-arround align-items-center">
-                {dashboardDetails.scannedCoupons && (
-                  <div>
-                    <table className="table">
+
+                    <table >
                       {dashboardDetails.scannedCoupons.length !== 0 && (
                         <>
                           <th scope="col">Coupon Value</th>
                           <th>Number of Scanned Coupons</th>
-                          <th>Expired Coupons</th>
-                          <th>Transferred Amount</th>
                         </>
                       )}
                       <tbody>
@@ -151,13 +155,85 @@ const Dashboard = () => {
                         </tr>
                       </tbody>
                     </table>
+                    </>
+                                    )}
+                                    </div>
+                    <div className="expired-container">
+                    <h6 style={{ color: "black", marginBottom: 10, borderBottom: '1px solid black' }}>
+                Expired Coupons
+              </h6>
+                    {dashboardDetails.expiredCoupons && (
+                      <table>
+{/* {dashboardDetails.expiredCoupons.length !== 0 && ( */}
+                        <>
+                          <th >Coupon Value</th>
+                          <th>Number of coupons</th>
+                        </>
+                      {/* )} */}
+                      <tbody>
+                        <tr>
+                          <td>
+                            {dashboardDetails?.expiredCoupons[0]?.faceValue}
+                          </td>
+                          <td>
+                            {dashboardDetails?.expiredCoupons[0]?.expiredCount}
+                          </td>
+                          <td>
+                            {
+                              dashboardDetails?.expiredCoupons[0]
+                                ?.expiredCoupons
+                            }
+                          </td>
+                          <td>
+                            {dashboardDetails.transaction[0]?.transactionAmount}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            {dashboardDetails?.expiredCoupons[1]?.faceValue}
+                          </td>
+                          <td>
+                            {dashboardDetails?.expiredCoupons[1]?.expiredCount}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            {dashboardDetails?.expiredCoupons[2]?.faceValue}
+                          </td>
+                          <td>
+                            {dashboardDetails?.expiredCoupons[2]?.expiredCount}
+                          </td>
+                        </tr>
+                      </tbody>
+                      </table>
+                    )}
+                    </div>
+                    <div>
+                      {dashboardDetails.transaction &&
+                      <table>
+                        {/* {dashboardDetails.expiredCoupons.length !== 0 && ( */}
+                        <>
+                          <th>Transferred Amount</th>
+                        </>
+                      {/* )} */}
+                        <tbody>
+                        <tr>
+                          <td>
+                            {dashboardDetails?.transaction?.transactionAmount}
+                          </td>
+                          </tr>
+                        </tbody>
+                      </table>
+}
+                    </div>
                     {/* <p>facevalue   :{dashboardDetails?.scannedCoupons[0]?.faceValue} </p> */}
                     {/* <p>coupon count:{dashboardDetails?.scannedCoupons[0]?.scannedCount}</p>  */}
                   </div>
-                )}
               </div>
             </div>
-          </div>
+            <div>
+              
+            </div>
         </div>
       )}
     </>

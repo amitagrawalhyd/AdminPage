@@ -57,3 +57,22 @@ svg{
 ::placeholder{
   font-size: 12px;
 }
+
+.dashboard-contaier{
+  display: flex;
+  background-color: aqua;
+  width:100%;
+  height: 100%;
+}
+
+.scanned-container{
+  width: 30%;
+  height: 300px;
+  border: 1px solid black;
+  /* display: flex; */
+  /* justify-content: space-between; */
+}
+.expired-container{
+  width: 30%;
+  border: 1px solid black;
+}
