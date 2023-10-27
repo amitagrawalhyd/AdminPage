@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Constants } from "../constants/credentials";
 import Cookies from "js-cookie";
+// import "";
 const ManualEntry = () => {
   const [couponCode, setCouponCode] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
-  const companyId = Constants.companyId;
-  const token = Cookies.get("token");
+  const CompanyId = sessionStorage.getItem('CompanyId');
+  const token = sessionStorage.getItem('token');
   function handleSubmit(event) {
     event.preventDefault();
     fetch(
-      `http://183.83.219.144:81/LMS/Coupon/ConsumeManualCoupon/${companyId}/${couponCode}/${mobileNumber}`,
+      `http://183.83.219.144:81/LMS/Coupon/ConsumeManualCoupon/${CompanyId}/${couponCode}/${mobileNumber}`,
       {
         method: "POST",
         headers: new Headers({
@@ -19,7 +20,7 @@ const ManualEntry = () => {
     )
       .then((response) => response.json())
       .then((responseData) => {
-        console.log("manual entry coupon response:",responseData)
+        console.log("manual entry coupon response:", responseData);
         if (responseData === true) {
           alert("Coupon Code posted successfully");
         } else if (responseData === false) {
@@ -32,34 +33,47 @@ const ManualEntry = () => {
   }
 
   return (
-    <div>
-      <h4 className="header mb-2">Manual Entry</h4>
-      <p className="mb-2">Enter the coupon code manually</p>
-      <form onSubmit={handleSubmit} className="form_transaction ">
-        <div style={{ display: "flex", flexDirection: "row" }}>
-          <label className="mb-0">Mobile Number:</label>
-          <input
-            className="form-control mx-2 mb-2"
-            type="text"
-            value={mobileNumber}
-            onChange={(e) => setMobileNumber(e.target.value)}
-          />
-        </div>
-        <div style={{ display: "flex", flexDirection: "row" }}>
-          <label className="mb-0">Coupon Id:</label>
-          <input
-            className="form-control mx-2 "
-            type="text"
-            value={couponCode}
-            onChange={(e) => setCouponCode(e.target.value)}
-          />
-        </div>
+    <div className="manual-entry-container">
+      <div className="manual-entry-form">
+        <h4 className="header mb-2 text-center">Manual Entry</h4>
+        <p className="mb-2">Enter the coupon code manually</p>
+        <form onSubmit={handleSubmit} className="form_transaction ">
+          <div >
+            <label className="mb-0">Mobile Number</label>
+            <input
+              className="form-control mx-2 mb-2"
+              type="text"
+              value={mobileNumber}
+              onChange={(e) => setMobileNumber(e.target.value)}
+            />
+          </div>
+          <div >
+            <label className="mb-0">Coupon Id</label>
+            <input
+              className="form-control mx-2 "
+              type="text"
+              value={couponCode}
+              onChange={(e) => setCouponCode(e.target.value)}
+            />
+          </div>
 
-        <br />
-        <button className="btn btn-primary" type="submit">
-          Submit
-        </button>
-      </form>
+          <br />
+          <button
+            className="btn btn-primary"
+            style={{
+              alignSelf: "flex-end",
+              position: "absolute",
+              bottom: 0,
+              right:0,
+              margin: 10,
+              border: 0,
+            }}
+            type="submit"
+          >
+            Submit
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

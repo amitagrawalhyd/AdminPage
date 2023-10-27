@@ -4,28 +4,46 @@ import Cookies from "js-cookie";
 import { usePDF } from "react-to-pdf";
 import { useDownloadExcel } from "react-export-table-to-excel";
 import DatePicker from "react-datepicker";
-import Dropdown from 'react-dropdown';
-import 'react-dropdown/style.css';
-import Autocomplete from 'react-autocomplete';
-
+import Dropdown from "react-dropdown";
+import "react-dropdown/style.css";
+import Autocomplete from "react-autocomplete";
+import { compareAsc } from "date-fns";
 
 const Transactions = () => {
-  const companyId = Constants.companyId;
-  const token = Cookies.get("token");
-  const [mobileNumber, setMobileNumber] = useState("");
+  const CompanyId = sessionStorage.getItem('CompanyId');
+  const token = sessionStorage.getItem('token');
+  const [mobileNumber, setMobileNumber] = useState('');
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [transactions, setTransactions] = useState([]);
-  const [allTransactions,setAllTransactions] = useState([]);
+  const [allTransactions, setAllTransactions] = useState([]);
 
-  let heading = ["Amount", "Name", "Mobile Number", "UPI ID", "Status", "Date"];
+  let heading = [
+    "Select",
+    "Amount",
+    "Name",
+    "Mobile Number",
+    "Payout Status",
+    "Transaction ID",
+    "Status",
+    "Date",
+  ];
   const options = ["All", "Completed", "Pending", "Rejected"]; //for dropdown
-  const  defaultOption = options[0];
-
+  const defaultOption = options[0];
   const [selected, setSelected] = useState(options[0]); //default value of dropdown
   const { toPDF, targetRef } = usePDF({ filename: "transactions.pdf" }); //for pdf
   const tableRef = useRef(null); // for excel
-  var value = ''; // testing purpose
+  var value = ""; // testing purpose
+  const [selectedItems, setSelectedItems] = useState([]);
+
+  const handleCheckboxChange = (transaction) => {
+    if (selectedItems.includes(transaction)) {
+      setSelectedItems(selectedItems.filter((item) => item !== transaction));
+    } else {
+      setSelectedItems([...selectedItems, transaction]);
+    }
+  };
+  console.log('selected items:', selectedItems);
 
   function formatStartDate(separator = "-") {
     let date = startDate.getDate();
@@ -49,7 +67,7 @@ const Transactions = () => {
 
   const getTransactions = async () => {
     const resp = await fetch(
-      `http://183.83.219.144:81/LMS/Coupon/GetTransactions/${companyId}?mobileNumber=${mobileNumber}&startDate=${formattedStartDate}&endDate=${formattedEndDate}`, 
+      `http://183.83.219.144:81/LMS/Coupon/GetTransactions/${CompanyId}?mobileNumber=${mobileNumber}&startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
       {
         method: "GET",
         headers: new Headers({
@@ -66,9 +84,10 @@ const Transactions = () => {
   };
   // console.log("transactions:", transactions);
 
-  const getAllTransactions = async () => { //for total transactions list
+  const getAllTransactions = async () => {
+    //for total transactions list
     const resp = await fetch(
-      `http://183.83.219.144:81/LMS/Coupon/GetTransactions/${companyId}`, 
+      `http://183.83.219.144:81/LMS/Coupon/GetTransactions/${CompanyId}`,
       {
         method: "GET",
         headers: new Headers({
@@ -83,7 +102,7 @@ const Transactions = () => {
     setAllTransactions(respJson);
     // setLoading(false);
   };
-  console.log('all transactions:',allTransactions);
+  // console.log("all transactions:", allTransactions);
 
   useEffect(() => {
     getTransactions();
@@ -98,10 +117,12 @@ const Transactions = () => {
   // const reversed = sortedTransactions.reverse();
   // console.log('sorted transactions:',sortedTransactions);
 
-  const allMobileNumbers = allTransactions?.map((transaction) => transaction.registerMobileNumber); // list of all mobile numbers*(contains duplicates)
+  const allMobileNumbers =
+    !allTransactions.message &&
+    allTransactions?.map((transaction) => transaction.registerMobileNumber); // list of all mobile numbers*(contains duplicates)
   const uniqNumbers = [...new Set(allMobileNumbers)];
 
-  console.log("mobilenumber list:", uniqNumbers); // list of unique mobile numbers
+  // console.log("mobilenumber list:", uniqNumbers); // list of unique mobile numbers
   const { onDownload } = useDownloadExcel({
     currentTableRef: tableRef.current,
     filename: "List of Transactions",
@@ -113,9 +134,29 @@ const Transactions = () => {
     setSelected(e.value);
     // getTransactions();
   }
-  console.log("selected before filter:", selected);
+  // console.log("selected before filter:", selected);
 
-  const filteredTransactions = transactions?.filter(filterTransactions);
+  const handleRequeue= async () => {
+    const completeTransations = await Promise.all(
+      selectedItems.map(async (transaction) => {
+        const response = await fetch(`http://183.83.219.144:81/LMS/Coupon/RequeueTransaction/${CompanyId}/${transaction.id}/${transaction.upiAddress}/${transaction.payoutFundAccountId}/${transaction.transactionAmount*100}`,
+                                                                //Coupon/RequeueTransaction/{companyId}/{transactionId}/{upiAddress}/{fundAccountId}/{amount}
+        {
+        method:'POST',
+        headers: new Headers({
+          Authorization: `Bearer ${token}`,
+        }),
+        }
+        )
+        return await response.json();
+      })
+    );
+    console.log("complete api response:",completeTransations);
+  }
+
+  const filteredTransactions =
+    !transactions.message && 
+    transactions?.filter(filterTransactions);
   function filterTransactions(transaction) {
     if (transaction.isPaid && transaction.isActive && selected == "Completed") {
       return transaction;
@@ -131,16 +172,16 @@ const Transactions = () => {
       selected == "Rejected"
     ) {
       return transaction;
-    }
-    else if (selected == "All"){
+    } else if (selected == "All") {
       return transaction;
     }
   }
 
-  console.log('here;', filteredTransactions);
+  // console.log("here;", filteredTransactions);
   return (
     <div>
       <h4 className="header mb-2">Transactions requested</h4>
+      <button className="btn btn-primary" onClick={handleRequeue}>Requeue</button> 
       <div className="d-flex align-items-center justify-content-between form_transaction">
         <input
           className="form-control ml-0"
@@ -252,45 +293,65 @@ const Transactions = () => {
                 "No records found"
               )}
             </thead>
-            {filterTransactions.length != 0 && (
+            {filterTransactions.length !== 0 && (
               <tbody>
-                {filteredTransactions
-                  ?.sort(
-                    (a, b) =>
-                      new Date(...a.transactionDate.split("T")[0].split("-")) -
-                      new Date(...b.transactionDate.split("T")[0].split("-"))
-                  )
-                  .reverse()
-                  ?.map((transaction) => (
-                    <tr>
-                      <td className="transaction">
-                        ₹{transaction.transactionAmount}
-                      </td>
-                      <td className="transaction">
-                        {" "}
-                        {transaction.registerName}
-                      </td>
-                      <td className="transaction">
-                        {transaction.registerMobileNumber}
-                      </td>
-                      {/* <td className="transaction">{transaction.city}</td> */}
-                      <td className="transaction">{transaction.upiAddress}</td>
-                      <td className="transaction">
-                        {transaction.isPaid &&
-                          transaction.isActive &&
-                          "Completed"}
-                        {!transaction.isPaid &&
-                          transaction.isActive &&
-                          "Pending"}
-                        {!transaction.isPaid &&
-                          !transaction.isActive &&
-                          "Rejected"}
-                      </td>
-                      <td className="transaction">
-                        {transaction.transactionDate.split("T")[0]}
-                      </td>
-                    </tr>
-                  ))}
+                {
+                !transactions.message &&
+                  filteredTransactions
+                    ?.sort(
+                      (a, b) =>
+                        new Date(
+                          ...a.transactionDate.split("T")[0].split("-")
+                        ) -
+                        new Date(...b.transactionDate.split("T")[0].split("-"))
+                    )
+                    .reverse()
+                    ?.map((transaction) => (
+                      <tr>
+                        {(!transaction.isActive && !transaction.isPaid) ||
+                        transaction.payoutStatus === "rejected" ||
+                        transaction.payoutStatus === "reversed" ||
+                        transaction.payoutStatus === "failed" ? (
+                          <td>
+                            <input
+                              type="checkbox"
+                              checked={selectedItems.includes(transaction)}
+                              onChange={() => handleCheckboxChange(transaction)}
+                            />
+                          </td>
+                        ) : (
+                          <td> </td>
+                        )}
+                        <td className="transaction">
+                          ₹{transaction.transactionAmount}
+                        </td>
+                        <td className="transaction">
+                          {" "}
+                          {transaction.registerName}
+                        </td>
+                        <td className="transaction">
+                          {transaction.registerMobileNumber}
+                        </td>
+                        {/* <td className="transaction">{transaction.city}</td> */}
+                        {/* <td className="transaction">{transaction.upiAddress}</td> */}
+                        <td>{transaction.payoutStatus}</td>
+                        <td>{transaction.payoutTransactionId}</td>
+                        <td className="transaction">
+                          {transaction.isPaid &&
+                            transaction.isActive &&
+                            "Completed"}
+                          {!transaction.isPaid &&
+                            transaction.isActive &&
+                            "Pending"}
+                          {!transaction.isPaid &&
+                            !transaction.isActive &&
+                            "Rejected"}
+                        </td>
+                        <td className="transaction">
+                          {transaction.transactionDate.split("T")[0]}
+                        </td>
+                      </tr>
+                    ))}
               </tbody>
             )}
           </table>

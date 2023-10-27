@@ -3,39 +3,61 @@ import { Constants } from "../constants/credentials";
 import Cookies from "js-cookie";
 
 const PendingTransactons = () => {
-  const companyId = Constants.companyId;
-  const token = Cookies.get("token");
+  const CompanyId = sessionStorage.getItem('CompanyId');
+  const token = sessionStorage.getItem('token');
   const [PendingTransactons, setPendingTransactions] = useState([]);
   let heading = ["Select","Amount", "Name", "Mobile Number","Status", "UPI ID", "Date"];
   const [allchecked, setAllChecked] = React.useState([]);
-  const mobileNumber = Cookies.get('mobileNumber');
-const [selectAll,setSelectAll] = useState(false);
+  const mobileNumber = sessionStorage.getItem('mobileNumber');
+// const [selectAll,setSelectAll] = useState(false);
+const [selectAll, setSelectAll] = useState(false);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [userDetalis,setUserDetails] = useState([]);
+  const [usernumbers,setUserNumbers] = useState([]);
 
-function handleSelectAll(e){
-  setSelectAll(e.target.checked);
-
-}
-
-  function handleChange(e) {
-    if(selectAll){
-      setAllChecked([...allchecked,selectAll]);
+  const toggleSelectAll = () => {
+    if (selectAll) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(PendingTransactons.map((item) => item));
     }
-    else if(!selectAll){
-      setAllChecked([...allchecked,selectAll]);
+    setSelectAll(!selectAll);
+  };
+  console.log('selected items:',selectedItems);
+
+  const handleCheckboxChange = (transaction) => {
+    if (selectedItems.includes(transaction)) {
+      setSelectedItems(selectedItems.filter((item) => item !== transaction));
+    } else {
+      setSelectedItems([...selectedItems, transaction]);
     }
-     if (e.target.checked) {
-        setAllChecked([...allchecked, e.target.value]);
-     } else {
-        setAllChecked(allchecked.filter((item) => item !== e.target.value));
-     }
-  }
+  };
+
+// function handleSelectAll(e){
+//   setSelectAll(e.target.checked);
+
+// }
+
+//   function handleChange(e) {
+//     if(selectAll){
+//       setAllChecked([...allchecked,selectAll]);
+//     }
+//     else if(!selectAll){
+//       setAllChecked([...allchecked,selectAll]);
+//     }
+//      if (e.target.checked) {
+//         setAllChecked([...allchecked, e.target.value]);
+//      } else {
+//         setAllChecked(allchecked.filter((item) => item !== e.target.value));
+//      }
+//   }
   // console.log("checked values",allchecked);
   // console.log("select all value:",selectAll)
 
   const handleComplete= async () => {
     const completeTransations = await Promise.all(
-      allchecked.map(async (transactionId) => {
-        const response = await fetch(`http://183.83.219.144:81/LMS/Coupon/CompleteTransaction/${companyId}/${mobileNumber}/${transactionId}`,
+      selectedItems.map(async (transaction) => {
+        const response = await fetch(`http://183.83.219.144:81/LMS/Coupon/CreatePayout/${CompanyId}/${transaction.id}/${transaction.upiAddress}/${transaction.payoutFundAccountId}/${transaction.transactionAmount*100}`,
         {
         method:'POST',
         headers: new Headers({
@@ -52,7 +74,23 @@ function handleSelectAll(e){
   const getPendingTransactions = async () => {
     //for total transactions list
     const resp = await fetch(
-      `http://183.83.219.144:81/LMS/Coupon/GetPendingTransactions/${companyId}/${mobileNumber}`,
+      `http://183.83.219.144:81/LMS/Coupon/GetPendingTransactions/${CompanyId}/${mobileNumber}`,
+      {
+        method: "GET",
+        headers: new Headers({
+          Authorization: `Bearer ${token}`,
+        }),
+      }
+    );
+    const respJson = await resp.json();
+    setPendingTransactions(respJson);
+    // setLoading(false);
+  };
+  // console.log("all pending transactions:", PendingTransactons);
+
+  const getUserDetails = async () => { //for user list
+    const resp = await fetch(
+      `http://183.83.219.144:81/LMS/Registration/GetRegistrations/${CompanyId}`,
       {
         method: "GET",
         headers: new Headers({
@@ -64,18 +102,25 @@ function handleSelectAll(e){
     //setData(resp.json());
     //console.log('data length: ', data.length);
     const respJson = await resp.json();
-    setPendingTransactions(respJson);
+    setUserDetails(respJson);
     // setLoading(false);
   };
-  // console.log("all pending transactions:", PendingTransactons);
+  console.log("user datails.",userDetalis)
   useEffect(() => {
     getPendingTransactions();
-  }, [getPendingTransactions]);
+    getUserDetails();
+  }, []);
+  console.log("checked values",allchecked);
+
 
   return (
     <>
       <h4 className="header mb-2">PendingTransactons</h4>
-      <input value="selectAll" type="checkbox" onChange={handleSelectAll} /> 
+      {/* <input value="selectAll" type="checkbox" onChange={handleSelectAll} />  */}
+      <label>
+        <input type="checkbox" checked={selectAll} onChange={toggleSelectAll} />
+        Select All
+      </label>
       <button className="btn btn-primary" onClick={handleComplete}>Complete</button> 
       <div>
         <table className="table  table-striped" >
@@ -87,7 +132,7 @@ function handleSelectAll(e){
             </tr>
           </thead>
           <tbody>
-            {PendingTransactons
+            {!PendingTransactons.message && PendingTransactons
               ?.sort(
                 (a, b) =>
                   new Date(...a.transactionDate.split("T")[0].split("-")) -
@@ -95,7 +140,13 @@ function handleSelectAll(e){
               )
               ?.map((transaction) => (
                 <tr>
-                  <td> <input value={transaction.id} type = "checkbox" onChange = {handleChange} /> </td>
+                  {/* <td> <input value={transaction.id} type = "checkbox" onChange = {handleChange} /> </td> */}
+                  <td>
+                  <input
+                type="checkbox"
+                checked={selectedItems.includes(transaction)}
+                onChange={() => handleCheckboxChange(transaction)}
+              /> </td>
                   <td className="coupon">{transaction.transactionAmount}</td>
                   <td className="coupon">{transaction.registerName}</td>
                   <td className="coupon">{transaction.registerMobileNumber}</td>

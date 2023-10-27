@@ -1,241 +1,355 @@
-import React from "react";
+import React, { useState, useEffect, createContext, useContext } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { Constants } from "../../constants/credentials";
 import Cookies from "js-cookie";
+import { useFormik } from "formik";
+import { getToken } from "./UserList";
+import { useNavigate } from "react-router-dom";
 
-class AddUser extends React.Component {
-  // constructor(props) {
-  //     super(props);
-  //     this.handleSubmit = this.handleSubmit.bind(this);
-  //   }
-  handleSubmit(values) {
-    const token = Cookies.get('token');
-    console.log("token from add user:",token);
-    // console.log(JSON.stringify(values, null, 2));
-    console.log(values.name)
-    fetch(
-      `http://183.83.219.144:81/LMS/Registration/SaveRegistration`,
+// const editContext = createContext();
+
+// export const EditProvider = ({ children }) => {
+//   const [editmode, setEditmode] = useState(false);
+//   return (
+//     <editContext.Provider value={{ editmode, toggleEdit }}>
+//       {children}
+//     </editContext.Provider>
+//   );
+// };
+
+// export const useEditmode = () => {
+//   return useContext(editContext);
+// };
+
+const AddUserContext = createContext();
+
+export const AddUserProvider = ({ children }) => {
+  const [editmode, setEditmode] = useState(false);
+  const [initialValues, setInitialValues] = useState({
+    dropdown: 6,
+    mobileNumber: "",
+    name: "",
+    address1: "",
+    address2: "",
+    city: "",
+    state: "",
+    pincode: "",
+    upiAddress: "",
+    aadhaarNumber: "",
+    panNumber: "",
+  });
+  const toggleEdit = () => {
+    setEditmode(!editmode);
+  };
+
+  return (
+    <AddUserContext.Provider
+      value={{ initialValues, setInitialValues, editmode, toggleEdit }}
+    >
+      {children}
+    </AddUserContext.Provider>
+  );
+};
+
+export const useAddUser = () => {
+  return useContext(AddUserContext);
+};
+
+export default function AddUser() {
+  const CompanyId = sessionStorage.getItem('CompanyId');
+  const storedMobileNumber = sessionStorage.getItem("mobileNumber");
+  const [registrationTypes, setRegistrationTypes] = useState([]); // types of registrations (distributor,dealer,mechanic)
+  const [adminDetails, setAdminDetails] = useState([]); // admin details
+  // const defaultOption = options[0]; //dropdown menu default option
+  const { initialValues, editmode } = useAddUser();
+  const navigate = useNavigate();
+  const parentRegistrationId = sessionStorage.getItem('parentRegistrationId')
+  var adminRegistrationId = 0;
+
+  // useEffect(() => {
+  //   getAdminDetails();
+  // }, []);
+
+  useEffect(() => {
+    getRegistrationTypes();
+  }, []);
+
+  // const getAdminDetails = async () => {
+  //   const resp = await fetch(
+  //     `http://183.83.219.144:81/LMS/Registration/GetRegistrations/${CompanyId}?mobileNumber=${storedMobileNumber}`,
+  //     {
+  //       method: "GET",
+  //       headers: new Headers({
+  //         Authorization: `Bearer ${getToken()}`,
+  //       }),
+  //     }
+  //   );
+  //   const data = await resp.json();
+  //   setAdminDetails(data);
+  //   console.log("res", data);
+  // };
+  // adminRegistrationId = adminDetails && adminDetails.registrationId;
+
+  // console.log("admin details:", adminDetails);
+  // console.log("admin id: ", adminRegistrationId);
+
+  const getRegistrationTypes = async () => {
+    const resp = await fetch(
+      `http://183.83.219.144:81/LMS/Registration/GetRegistrationTypes/${CompanyId}/${storedMobileNumber}`,
       {
-        method: 'POST',
+        method: "GET",
         headers: new Headers({
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${getToken()}`,
+        }),
+      }
+    ).catch((error) => console.log(error));
+
+    const data = await resp.json();
+    setRegistrationTypes(data);
+  };
+  // const arr = !registrationTypes.message && registrationTypes.slice(1);
+
+  const validate = (values) => {
+    const errors = {};
+
+    if (!values.name) {
+      errors.name = "Name is required";
+    }
+
+    if (!values.mobileNumber) {
+      errors.mobileNumber = "Mobile Number is required";
+    }
+    // else if (values.lastName.length > 20) {
+    //   errors.lastName = 'Must be 20 characters or less';
+    // }
+
+    if (!values.pincode) {
+      errors.pincode = "Pincode is required";
+    }
+    return errors;
+  };
+
+  const formik = useFormik({
+    initialValues: initialValues,
+    enableReinitialize: true,
+    validate,
+    onSubmit: (values) => {
+      console.log(JSON.stringify(values));
+      console.log("values before submitting:",values);
+      console.log('admin id onsubmit:',adminRegistrationId,"user type:",values.dropdown);
+
+      fetch(`http://183.83.219.144:81/LMS/Registration/SaveRegistration`, {
+        method: "POST",
+        headers: new Headers({
+          Authorization: `Bearer ${getToken()}`,
+          // 'Accept': 'application/json, text/plain, */*',
+          "Content-Type": "application/json",
         }),
         body: JSON.stringify({
-            // "registrationId": 0,
-            // "companyId": 2,
-            // "registrationTypeId": 0,
-            // "registrationTypeExtId": 8,
-            // "registrationType": "Mechanic",
-            // "registerMobileNumber": "6451329780",
-            // "registerImeiNumber": "",
-            // "pin": "",
-            // "registerName": "Bill",
-            // "registerAddress1": "malakpet",
-            // "registerAddress2": "koti",
-            // "city": "Hyderabad",
-            // "state": "Telangana",
-            // "pinCode": "500016",
-            // "parentRegistrationId": 8,
-            // "walletValue": 0,
-            // "expiredWalletValue": 0,
-            // "paidValue": 0,
-            // "upiAddress": "",
-            // "adhaarNumber": "",
-            // "panNumber": "",
-            // "isActive": true
-
-
-          // "companyId":Constants.companyId,
-          // "registrationTypeExtId":8,
-          // "registerMobileNumber":values.mobileNumber,
-          // "registerName": values.name,
-          // "registerAddress1":values.address1,
-          // "registerAddress2":values.address2,
-          // "city":values.city,
-          // "state":values.state,
-          // "pinCode":values.pinCode,
-          // "parentRegistrationId":8,
-          // isActive:true
+          registrationId: 0,
+          companyId: CompanyId, //required
+          registrationTypeId: 0,
+          registrationTypeExtId: values.dropdown, //required
+          registrationType: "",
+          registerMobileNumber: values.mobileNumber, //required
+          registerImeiNumber: "",
+          pin: "",
+          registerName: values.name, //`${values.name}`//required
+          registerAddress1: values.address1, //required
+          registerAddress2: values.address2, //required
+          city: values.city, //required
+          state: values.state, //required
+          pinCode: values.pincode, //required
+          parentRegistrationId: parentRegistrationId, //required
+          walletValue: 0,
+          expiredWalletValue: 0,
+          paidValue: 0,
+          upiAddress: "", //input field
+          adhaarNumber: "", //input field
+          panNumber: "", //input field
+          isActive: true, //required
         }),
-      },
-    )
-      .then(response => response.json())
-      .then(responseData => {
-        console.log(responseData);
       })
-      .catch(error => console.log(error));
-  }
-  validationSchema() {
-    return Yup.object().shape({
-      name: Yup.string().required("Name is required"),
-      mobileNumber: Yup.string().required("Mobile Number is required"),
-      // .min(6, 'Username must be at least 6 characters')
-      // .max(20, 'Username must not exceed 20 characters'),
-      address1: Yup.string().required("Address1 is required"),
-      // .email('Email is invalid'),
-      city: Yup.string().required("City is required"),
-      // .min(6, 'Password must be at least 6 characters')
-      // .max(40, 'Password must not exceed 40 characters'),
-      state: Yup.string().required("State is required"),
-      pincode: Yup.string().required("Pincode is required"),
-      // .oneOf([Yup.ref('password'), null], 'Confirm Password does not match'),
-      //   acceptTerms: Yup.bool().oneOf([true], 'Accept Terms is required'),
-    });
-  }
-  render() {
-    const initialValues = {
-      name: "",
-      mobileNumber: "",
-      address1: "",
-      address2: "",
-      city: "",
-      state: "",
-      pincode: "",
-    };
+        .then((response) => response.json())
+        .then((responseData) => {
+          if (responseData) {
+            alert("submitted successfully");
+            // window.location.reload();
+            navigate("/userlist");
+          }
+          console.log("response from saveRegistration:", responseData);
+        })
+        .catch((error) => console.log(error));
+    },
+  });
 
-    return (
-      <div class="container align-items-center">
-        <Formik
-          initialValues={initialValues}
-          validationSchema={this.validationSchema}
-          onSubmit={this.handleSubmit}
-        >
-          {({ errors, touched, resetForm }) => (
-            <Form>
-              <div className="w-50">
-                <label>Name*</label>
-                <Field
-                  name="name"
-                  type="text"
-                  className={
-                    "form-control" +
-                    (errors.name && touched.name ? " is-invalid" : "")
-                  }
-                />
-                <ErrorMessage
-                  name="name"
-                  component="div"
-                  className="invalid-feedback"
-                />
-              </div>
-
-              <div className="w-50">
-                <label htmlFor="mobileNumber">Mobile Number*</label>
-                <Field
-                  name="mobileNumber"
-                  type="text"
-                  className={
-                    "form-control" +
-                    (errors.mobileNumber && touched.mobileNumber
-                      ? " is-invalid"
-                      : "")
-                  }
-                />
-                <ErrorMessage
-                  name="mobileNumber"
-                  component="div"
-                  className="invalid-feedback"
-                />
-              </div>
-
-              <div className="w-50">
-                <label htmlFor="address1">Address 1*</label>
-                <Field
-                  name="address1"
-                  type="address1"
-                  className={
-                    "form-control" +
-                    (errors.address1 && touched.address1 ? " is-invalid" : "")
-                  }
-                />
-                <ErrorMessage
-                  name="address1"
-                  component="div"
-                  className="invalid-feedback"
-                />
-              </div>
-
-              <div className="w-50">
-                <label htmlFor="address1">Address 2</label>
-                <Field
-                  name="address2"
-                  type="address2"
-                  className={
-                    "form-control" +
-                    (errors.address2 && touched.address2 ? " is-invalid" : "")
-                  }
-                />
-              </div>
-
-              <div className="w-50">
-                <label htmlFor="city">City*</label>
-                <Field
-                  name="city"
-                  type="city"
-                  className={
-                    "form-control" +
-                    (errors.city && touched.city ? " is-invalid" : "")
-                  }
-                />
-                <ErrorMessage
-                  name="city"
-                  component="div"
-                  className="invalid-feedback"
-                />
-              </div>
-
-              <div className="w-50">
-                <label htmlFor="state">State*</label>
-                <Field
-                  name="state"
-                  // type="password"
-                  className={
-                    "form-control" +
-                    (errors.state && touched.state ? " is-invalid" : "")
-                  }
-                />
-                <ErrorMessage
-                  name="state"
-                  component="div"
-                  className="invalid-feedback"
-                />
-              </div>
-              <div className="w-50">
-                <label htmlFor="pincode">Pincode*</label>
-                <Field
-                  name="pincode"
-                  // type="password"
-                  className={
-                    "form-control" +
-                    (errors.pincode && touched.pincode ? " is-invalid" : "")
-                  }
-                />
-                <ErrorMessage
-                  name="pincode"
-                  component="div"
-                  className="invalid-feedback"
-                />
-              </div>
-
-              <div className="w-50">
-                <button type="submit" className="btn btn-primary">
-                  Register
-                </button>
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="btn btn-warning float-right"
-                >
-                  Clear
-                </button>
-              </div>
-            </Form>
+  return (
+    <div className="user-form-container">
+      <div className="user-form">
+        <form onSubmit={formik.handleSubmit}>
+          {/* <Dropdown
+          className="user_dropdown"
+          options={registrationTypes}
+          // onChange={handleSelectType}
+          value="-----"
+          // placeholder="Select an option"
+        /> */}
+        <div style={{display:'flex',flexDirection:'row',margin:10}}>
+        <div style={{flexDirection:"column",margin:10}}>
+          <label>Select type of user:</label>
+          {editmode ? (
+            <input value={formik.values.dropdown} disabled />
+          ) : (
+            <select
+              value={formik.values.dropdown}
+              name="dropdown"
+              onChange={formik.handleChange}
+              disabled={editmode}
+            >
+              {!registrationTypes.message &&
+                registrationTypes?.slice(1)?.map((type) => {
+                  return (
+                    <option
+                      key={type.registrationTypeExtId}
+                      value={type.registrationTypeExtId}
+                    >
+                      {type.registrationTypeName}
+                    </option>
+                  );
+                })}
+            </select>
           )}
-        </Formik>
-      </div>
-    );
-  }
-}
+          <br />
+          <label> Mobile Number: </label>
+          {/* <br /> */}
+          <input
+            id="mobileNumber"
+            name="mobileNumber"
+            type="mobileNumber"
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            disabled={editmode}
+            value={formik.values.mobileNumber}
+          />
+          {formik.touched.mobileNumber && formik.errors.mobileNumber ? (
+            <p style={{ color: "red" }}>{formik.errors.mobileNumber}</p>
+          ) : null}
+          <br />
+          <label>Name: </label>
+          <input
+            id="name"
+            name="name"
+            type="name"
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values.name}
+          />
+          {formik.touched.name && formik.errors.name ? (
+            <p style={{ color: "red" }}>{formik.errors.name}</p>
+          ) : null}
+          <br />
+          <label>Address1: </label>
+          <input
+            id="address1"
+            name="address1"
+            type="address1"
+            onChange={formik.handleChange}
+            value={formik.values.address1}
+          />
+          <br />
+          <label>Address2: </label>
+          <input
+            id="address2"
+            name="address2"
+            type="address2"
+            onChange={formik.handleChange}
+            value={formik.values.address2}
+          />
+          <br />
+          <label>City: </label>
+          <input
+            id="city"
+            name="city"
+            type="city"
+            onChange={formik.handleChange}
+            value={formik.values.city}
+            />
+          <br />
+            </div>
+          <div style={{flexDirection:"column",margin:10}}>
 
-export default AddUser;
+          <label>State: </label>
+          <input
+            id="state"
+            name="state"
+            type="state"
+            onChange={formik.handleChange}
+            value={formik.values.state}
+          />
+          <br />
+          <label>Pincode: </label>
+          <input
+            id="pincode"
+            name="pincode"
+            type="pincode"
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values.pincode}
+          />
+          {formik.touched.pincode && formik.errors.pincode ? (
+            <p style={{ color: "red" }}>{formik.errors.pincode}</p>
+          ) : null}
+          <br />
+          <label>UPI Address: </label>
+          <input
+            id="upiAddress"
+            name="upiAddress"
+            type="upiAddress"
+            onChange={formik.handleChange}
+            value={formik.values.upiAddress}
+          />
+
+          <br />
+
+          <label>Aadhaar Number: </label>
+
+          <input
+            id="aadhaarNumber"
+            name="aadhaarNumber"
+            type="aadhaarNumber"
+            onChange={formik.handleChange}
+            value={formik.values.aadhaarNumber}
+          />
+          <br />
+          <label>Pan Number: </label>
+
+          <input
+            id="panNumber"
+            name="panNumber"
+            type="panNumber"
+            onChange={formik.handleChange}
+            value={formik.values.panNumber}
+          />
+          <br />
+          <button
+            className="btn btn-primary"
+            style={{
+              alignSelf: "flex-end",
+              position: "absolute",
+              bottom: 0,
+              right: 0,
+              margin: 20,
+              border: 0,
+            }}
+            type="submit"
+          >
+            Submit
+          </button>
+          </div>
+        </div>
+        </form>
+      </div>
+    </div>
+  );
+}

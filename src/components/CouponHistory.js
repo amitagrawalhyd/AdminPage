@@ -9,7 +9,7 @@ import { usePDF } from "react-to-pdf";
 import { useDownloadExcel } from "react-export-table-to-excel";
 
 const CouponHistory = () => {
-  const companyId = Constants.companyId;
+  const CompanyId = sessionStorage.getItem('CompanyId');
   const token = Constants.token;
   const [couponData, setCouponData] = useState([]);
   let heading = [
@@ -52,7 +52,7 @@ const CouponHistory = () => {
   const getCouponHistory = async () => {
     // console.log('loading data:', storedMobileNumber, storedToken);
     const resp = await fetch(
-      `http://183.83.219.144:81/LMS/Coupon/GetCouponTransactions/${companyId}?mobileNumber=${mobileNumber}&startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
+      `http://183.83.219.144:81/LMS/Coupon/GetCouponTransactions/${CompanyId}?mobileNumber=${mobileNumber}&startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
       {
         method: "GET",
         headers: new Headers({

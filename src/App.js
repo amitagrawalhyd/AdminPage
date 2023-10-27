@@ -1,4 +1,4 @@
-import React,{createContext} from "react";
+import React,{createContext,useContext,useState} from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
@@ -31,39 +31,66 @@ import {
   Menu,
   MenuItem,
   SubMenu,
-  useProSidebar,
+  // useProSidebar,
 } from "react-pro-sidebar";
 import { Routes, Route, Link, useLocation, Navigate } from "react-router-dom";
 import Login from "./pages/login/Login";
 import Dashboard from "./components/Dashboard";
 import Transactions from "./components/Transactions";
 import UserList from "./components/User/UserList";
-import AddUser from "./components/User/AddUser";
+import AddUser, { AddUserProvider } from "./components/User/AddUser";
 import CouponHistory from "./components/CouponHistory";
 import Notifications from "./components/Notifications";
 import ManualEntry from "./components/ManualEntry";
 import PendingTransactions from './components/PendingTransactions';
+import PageNotFound from "./components/PageNotFound";
 import Cookies from 'js-cookie';
 import {useNavigate } from "react-router-dom";
 
-const Home = () => {
+
+// const Home = () => {
+//   return (
+//     <>
+//       <h1 className="header"> WELCOME </h1>
+//       <h3>Bank of the free</h3>
+//       <p>Lorem ipsum dolor sit amet...</p>
+//     </>
+//   );
+// };
+const AppContext = createContext();
+
+export const AppProvider = ({ children }) => {
+  const [companyId, setCompanyId] = useState('');
+  const [token, setToken] = useState('');
+
+  // const toggleEdit = () => {
+  //   setEditmode(!editmode);
+  // };
+
   return (
-    <>
-      <h1 className="header"> WELCOME </h1>
-      <h3>Bank of the free</h3>
-      <p>Lorem ipsum dolor sit amet...</p>
-    </>
+    <AppContext.Provider
+      value={{ companyId, setCompanyId, token, setToken }}
+    >
+      {children}
+    </AppContext.Provider>
   );
 };
 
+export const useAppContext = () => {
+  return useContext(AppContext);
+};
+
+
+
 const App = () => {
   const location = useLocation();
-  // console.log(location.pathname);
-  const { collapseSidebar } = useProSidebar();
-  const token = Cookies.get('token');
+  // const { collapseSidebar } = useProSidebar();
+  const token = sessionStorage.getItem('token');
   const navigate = useNavigate();
 
   // console.log('token from login:',token)
+  // console.log("location pathname, token",location.pathname,token);
+
 
   return (
     <div
@@ -72,7 +99,7 @@ const App = () => {
         height: "100vh",
       }}
     >
-      {location.pathname != "/" && (
+      {location.pathname != "/" && token &&(
         <Sidebar className="position-fixed">
           <Menu>
             <MenuItem
@@ -124,7 +151,7 @@ const App = () => {
             </SubMenu>
 
 
-            {/* <SubMenu label="User" icon={<PersonIcon />}> */}
+            <SubMenu label="User" icon={<PersonIcon />}>
               <MenuItem
                 component={<Link to="userlist" className="link" />}
                 icon={<PeopleAltIcon />}
@@ -132,15 +159,15 @@ const App = () => {
                 {" "}
                 User List{" "}
               </MenuItem>
-              {/* <MenuItem
+              <MenuItem
                 component={<Link to="adduser" className="link" />}
                 icon={<PersonAddAltIcon />}
               >
                 {" "}
                 Add User{" "}
-              </MenuItem> */}
+              </MenuItem>
               {/* <MenuItem icon={<ManageAccountsIcon />}> Edit User </MenuItem> */}
-            {/* </SubMenu> */}
+            </SubMenu>
 
 
             <MenuItem
@@ -152,21 +179,22 @@ const App = () => {
             </MenuItem>
             <MenuItem
                 onClick={() => {
-                  // Cookies.remove('token');
+                  sessionStorage.removeItem('token');
                   console.log('token after logout:',token)
-                  // navigate("/");
+                  navigate("/");
                 }}
             icon={<LogoutRoundedIcon />}> Logout </MenuItem>
           </Menu>
         </Sidebar>
       )}
       {/* routes */}
-      <section className={location.pathname == "/"? "" : "section"}>
-        
+      <section className={location.pathname == "/"? "login-container" : "section"}>
+        <AppProvider>
+        <AddUserProvider>
         <Routes>
-        {/* {!token ? ( */}
+        {!token ? (
           <Route path="/" element={<Login />} />
-        // ) : (
+        ) : ( 
           <>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="transactions" element={<Transactions />} />
@@ -176,10 +204,12 @@ const App = () => {
           <Route path="manualentry" element={<ManualEntry />} />
           <Route path="pendingtransactions" element={<PendingTransactions />} />
           <Route path="notifications" element={<Notifications />} />
-          <Route path="*" element={<pagenotfound />} />
+          <Route path="*" element={<PageNotFound />} />
           </>
-         {/* )} */}
+          )}  
         </Routes>
+        </AddUserProvider>
+        </AppProvider>
       </section>
     </div>
   );
