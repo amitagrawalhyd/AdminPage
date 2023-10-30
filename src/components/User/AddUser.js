@@ -39,13 +39,13 @@ export const AddUserProvider = ({ children }) => {
     aadhaarNumber: "",
     panNumber: "",
   });
-  const toggleEdit = () => {
-    setEditmode(!editmode);
-  };
+  // const toggleEdit = () => {
+  //   setEditmode(!editmode);
+  // };
 
   return (
     <AddUserContext.Provider
-      value={{ initialValues, setInitialValues, editmode, toggleEdit }}
+      value={{ initialValues, setInitialValues, editmode, setEditmode }}
     >
       {children}
     </AddUserContext.Provider>
@@ -62,7 +62,7 @@ export default function AddUser() {
   const [registrationTypes, setRegistrationTypes] = useState([]); // types of registrations (distributor,dealer,mechanic)
   const [adminDetails, setAdminDetails] = useState([]); // admin details
   // const defaultOption = options[0]; //dropdown menu default option
-  const { initialValues, editmode } = useAddUser();
+  const { initialValues, editmode,setEditmode } = useAddUser();
   const navigate = useNavigate();
   const parentRegistrationId = sessionStorage.getItem('parentRegistrationId')
   var adminRegistrationId = 0;
@@ -138,7 +138,7 @@ export default function AddUser() {
       console.log(JSON.stringify(values));
       console.log("values before submitting:",values);
       console.log('admin id onsubmit:',adminRegistrationId,"user type:",values.dropdown);
-
+      setEditmode(false);
       fetch(`http://183.83.219.144:81/LMS/Registration/SaveRegistration`, {
         method: "POST",
         headers: new Headers({
@@ -198,9 +198,9 @@ export default function AddUser() {
         <div style={{display:'flex',flexDirection:'row',margin:10}}>
         <div style={{flexDirection:"column",margin:10}}>
           <label>Select type of user:</label>
-          {editmode ? (
-            <input value={formik.values.dropdown} disabled />
-          ) : (
+          {/* {editmode ? ( */}
+            {/* <input value={formik.values.dropdown} disabled /> */}
+          {/* ) : ( */}
             <select
               value={formik.values.dropdown}
               name="dropdown"
@@ -219,7 +219,7 @@ export default function AddUser() {
                   );
                 })}
             </select>
-          )}
+          {/* )} */}
           <br />
           <label> Mobile Number: </label>
           {/* <br /> */}

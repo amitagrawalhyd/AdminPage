@@ -22,7 +22,7 @@ export default function UserList() {
   const options = ["All", "Company", "Distributer", "Dealer", "Mechanic"]; //for dropdown
   const defaultOption = options[0]; //dropdown menu default option
   const [selected, setSelected] = useState(options[0]); //default value of dropdown
-  const { setInitialValues,toggleEdit } = useAddUser();
+  const { setInitialValues, setEditmode} = useAddUser();
   const navigate = useNavigate();
 
   // const [editMode, setEditMode] = useState(false);
@@ -113,9 +113,9 @@ export default function UserList() {
     //edit user
     function handleEdit(user) {
       console.log("user to be edited", user);
-      toggleEdit();// setEditMode(true);
+      setEditmode(true);
       setInitialValues({
-        dropdown: user.registrationType,
+        dropdown: user.registrationTypeExtId,
         mobileNumber: user.registerMobileNumber,
         name: user.registerName,
         address1: user.registerAddress1,
