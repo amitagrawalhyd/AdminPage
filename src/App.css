@@ -85,26 +85,29 @@ svg{
 
 /* notifications */
 .notification-container{
+  width:50%;
   height: 100vh;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;  
+  margin-left:15px;
   /* background-color: aqua; */
-
+  margin:0 auto;
+  flex-direction: column;
 }
 .notification-form{
   margin-top:10px;
-  width:50%;
+  width:100%;
   height:50%;
   border: 1px solid black;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  /* justify-content: center; */
+  justify-content: center;
   align-items: center;
   position:relative;
   /* padding:10px; */
-  margin:0 auto;
+
 }
 .notification-title{
   border:0;
@@ -190,4 +193,13 @@ svg{
 
 .btn-light{
   cursor: not-allowed;
+}
+.logo {
+  width:80%;
+  height:50%;
+  object-fit:contain;
+  border-radius: 5px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }

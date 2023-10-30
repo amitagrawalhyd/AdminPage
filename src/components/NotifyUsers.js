@@ -5,7 +5,7 @@ import '../App.css';
 import {getToken} from './User/UserList';
 
 
-const Notifications = () => {
+const NotifyUsers = () => {
   const [title, setTitle] = useState();
   const [description, setDescription] = useState();
   const token = sessionStorage.getItem('token');
@@ -49,7 +49,7 @@ const Notifications = () => {
       const data = await response.json();
       // if(data.message){getUsers()}
       setRegistrations(data);
-      console.log('users from notification screen:',registrations);
+      console.log('usersfrom notify users:',registrations);
     } catch (error) {
       console.error("Error from get users api:", error);
       // alert("hello");
@@ -63,7 +63,7 @@ const Notifications = () => {
     }
 
   // console.log('base64 image:',img.split(",").pop());
-  console.log("title and description:",title,description)
+  console.log("title and description from notify users:",title,description)
 
   // const handleComplete= async () => {
   //   const completeTransations = await Promise.all(
@@ -82,31 +82,66 @@ const Notifications = () => {
   //   console.log("complete api response:",completeTransations);
   // }
 
-  function handleNotify() {
-    fetch(`http://183.83.219.144:81/LMS/Notification/SaveNotification`, {
-      method: "POST",
-      headers: new Headers({
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      }),
-      body: JSON.stringify({
-        companyId:2,
-        title: title,
-        description: description,
-        imageURL: img.split(",").pop(),
-        startDateTime: startDate.toISOString(),
-        endDateTime: endDate.toISOString(),
-        isActive: true,
-      }),
-    })
-      .then((response) => response.json())
-      .then((responseData) => {
-        console.log("response from savenotification:", responseData);
-      })
-      .catch((error) => console.log(error));
+  const handleNotify = async () => {
+
+    // fetch(`http://183.83.219.144:81/LMS/Notification/PushNotificationToUser/${title}/${description}/${registrationId}`, {
+    //   method: "POST",
+    //   headers: new Headers({
+    //     Authorization: `Bearer ${token}`,
+    //     "Content-Type": "application/json",
+    //   }),
+    // })
+    //   .then((response) => response.json())
+    //   .then((responseData) => {
+    //     console.log("response from savenotification:", responseData);
+    //   })
+    //   .catch((error) => console.log(error));
+
+      const NotifyUsers = await Promise.all(
+        selectedItems.map(async(user) => {
+          const response = await fetch(`http://183.83.219.144:81/LMS/Notification/PushNotificationToUser/${title}/${description}/${user.registrationId}`,
+          {
+          method:'GET',
+          headers: new Headers({
+            Authorization: `Bearer ${token}`,
+          }),
+          }
+          )
+          return await response.json();
+        })
+      );
+      console.log("complete api response from notify users:",NotifyUsers);
   }
 
   return (
+    <div style={{display:'flex',flexDirection:'row',width:'100%'}}>
+      <div style={{width:'40%'}}>
+            <table className="table table-striped">
+          <thead style={{ justifyContent: "center" }}>
+            <tr>
+              {heading.map((head, headID) => (
+                <th key={headID}>{head}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {!registrations.message &&
+              registrations?.map((user) => (
+                <tr>
+              <td>
+                <input
+                type="checkbox"
+                checked={selectedItems.includes(user)}
+                onChange={() => handleCheckboxChange(user)}
+              /> 
+              </td>
+                  <td className="user">{user.registerMobileNumber}</td>
+                  <td className="user"> {user.registerName}</td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+        </div>
       <div className="notification-container">
       <div className="notification-form">
       <h4>Send Notifications</h4>
@@ -154,9 +189,9 @@ const Notifications = () => {
           Notify
         </button>
       </div>
-      <p style={{marginTop:10}}>Click <a href="/notifyusers" style={{textDecoration:'underline',cursor:'pointer'}}>here</a> to notify selected users</p>
       </div>
+    </div>
   );
 };
 
-export default Notifications;
+export default NotifyUsers;

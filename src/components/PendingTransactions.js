@@ -114,14 +114,18 @@ const [selectAll, setSelectAll] = useState(false);
 
 
   return (
-    <>
+    <div style={{position:'relative'}}>
       <h4 className="header mb-2">PendingTransactons</h4>
       {/* <input value="selectAll" type="checkbox" onChange={handleSelectAll} />  */}
-      <label>
-        <input type="checkbox" checked={selectAll} onChange={toggleSelectAll} />
+      <div style={{display:'flex',flexDirection:'row',marginBottom:10}}>
+      <label style={{display:'flex',flexDirection:'row'}}>
+        <input style={{marginLeft:5,marginRight:5}}type="checkbox" checked={selectAll} onChange={toggleSelectAll} />
         Select All
       </label>
-      <button className="btn btn-primary" onClick={handleComplete}>Complete</button> 
+      <button className="btn btn-primary" 
+      style={{position:'absolute',right:0, marginRight:5}}
+      onClick={handleComplete}>Complete</button> 
+      </div>
       <div>
         <table className="table  table-striped" >
           <thead style={{ padding: 20 }}>
@@ -170,7 +174,7 @@ const [selectAll, setSelectAll] = useState(false);
           </tbody>
         </table>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -86,14 +86,14 @@ const CouponHistory = () => {
             onChange={(e) => setMobileNumber(e.target.value)}
             placeholder="Search Mobile Number"
           />
-          <label className="mb-0">Start Date:</label>
+          <label className="mb-0 mr-2">Start Date:</label>
           <DatePicker
             className="form-control"
             selected={startDate}
             dateFormat="yyyy/MM/dd"
             onChange={(date) => setStartDate(date)}
           />
-          <label className="mb-0">End Date:</label>
+          <label className="mb-0 mr-2 ml-2">End Date:</label>
           <DatePicker
             className="form-control"
             selected={endDate}

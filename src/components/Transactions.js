@@ -117,10 +117,10 @@ const Transactions = () => {
   // const reversed = sortedTransactions.reverse();
   // console.log('sorted transactions:',sortedTransactions);
 
-  const allMobileNumbers =
-    !allTransactions.message &&
-    allTransactions?.map((transaction) => transaction.registerMobileNumber); // list of all mobile numbers*(contains duplicates)
-  const uniqNumbers = [...new Set(allMobileNumbers)];
+  // const allMobileNumbers =
+  //   !allTransactions.message &&
+  //   allTransactions?.map((transaction) => transaction.registerMobileNumber); // list of all mobile numbers*(contains duplicates)
+  // const uniqNumbers = [...new Set(allMobileNumbers)];
 
   // console.log("mobilenumber list:", uniqNumbers); // list of unique mobile numbers
   const { onDownload } = useDownloadExcel({
@@ -157,6 +157,7 @@ const Transactions = () => {
   const filteredTransactions =
     !transactions.message && 
     transactions?.filter(filterTransactions);
+
   function filterTransactions(transaction) {
     if (transaction.isPaid && transaction.isActive && selected == "Completed") {
       return transaction;
@@ -308,7 +309,8 @@ const Transactions = () => {
                     .reverse()
                     ?.map((transaction) => (
                       <tr>
-                        {(!transaction.isActive && !transaction.isPaid) ||
+                        {
+                        // (!transaction.isActive && !transaction.isPaid) ||
                         transaction.payoutStatus === "rejected" ||
                         transaction.payoutStatus === "reversed" ||
                         transaction.payoutStatus === "failed" ? (
@@ -356,7 +358,7 @@ const Transactions = () => {
             )}
           </table>
         </div>
-        {filteredTransactions?.length != 0 && (
+        {filteredTransactions?.length !== 0 && (
           <div>
             <button className="btn btn-secondary mb-2" onClick={onDownload}>
               {" "}

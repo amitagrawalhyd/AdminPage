@@ -9,6 +9,8 @@ import { getCurrentDate } from "../components/currentDate";
 import Loader from "react-js-loader";
 import { useSearchParams, useLocation } from "react-router-dom";
 import { useAppContext } from "../App";
+import { useAddUser } from "./User/AddUser";
+import { getToken } from "./User/UserList";
 
 var isEmpty = require("lodash.isempty");
 
@@ -16,14 +18,15 @@ const Dashboard = () => {
   const currentDate = getCurrentDate();
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
-  const CompanyId = sessionStorage.getItem('CompanyId');
-  const token = sessionStorage.getItem('token');
+  const CompanyId = sessionStorage.getItem("CompanyId");
+  const token = sessionStorage.getItem("token");
   // const { token } = useAppContext();
 
   const mobileNumber = sessionStorage.getItem("mobileNumber");
-  const [dashboardDetails, setDashboardDetails] = useState([]);
+  const [dashboardDetails, setDashboardDetails] = useState({});
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
+  // const {setCompanyLogo} = useAddUser();
 
   function formatStartDate(separator = "-") {
     let date = startDate.getDate();
@@ -57,22 +60,50 @@ const Dashboard = () => {
   // setStartDate(date.toLocaleDateString("fr-CA"));
 
   const decodedToken = atob(token);
-  console.log('decoded token',JSON.parse(atob(token)).RegistrationId);
-
+  console.log("decoded token", JSON.parse(atob(token)).RegistrationId);
 
   const handleSubmit = () => {
     console.log("current date", currentDate);
     // e.preventDefault();
     // console.log('start date from handler:',startDate);
   };
-  useEffect(() => {
-    getDashboardDetails();
-  }, [mobileNumber, token]);
 
   const getDashboardDetails = async () => {
     setLoading(true);
     const resp = await fetch(
-      `http://183.83.219.144:81/LMS/Coupon/CouponSummary/${CompanyId}/${mobileNumber}?startDate=${formattedStartDate}&endDate=${formattedEndDate}  `, //
+      `http://183.83.219.144:81/LMS/Coupon/CouponSummary/${CompanyId}/${mobileNumber}?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
+      {
+        method: "GET",
+        headers: new Headers({
+          Authorization: `Bearer ${getToken()}`,
+        }),
+      }
+    );
+    const respJson = await resp.json();
+    setDashboardDetails(respJson);
+    setLoading(false);
+  };
+  console.log("dashboard details:", dashboardDetails);
+  // console.log('dashboardDetails.scannedCoupons?.length: ',dashboardDetails.scannedCoupons?.length)
+  console.log(
+    "dashboard condition:",
+    typeof dashboardDetails.scannedCoupons !== "undefined" &&
+      dashboardDetails.scannedCoupons.length > 0
+  );
+  // Object.keys(dashboardDetails).forEach(function(key, index) {
+  // dashboardDetails.[key]
+  // console.log("dash",dashboardDetails?.[key]);
+  // });
+  const [companydetails, setCompanyDetails] = useState({});
+  useEffect(() => {
+    getCompanyDetails();
+    getDashboardDetails();
+  }, []);
+
+  const getCompanyDetails = async () => {
+    // console.log('loading data:', storedMobileNumber, storedToken);
+    const resp = await fetch(
+      `http://183.83.219.144:81/LMS/Company/Companies/${CompanyId}`,
       {
         method: "GET",
         headers: new Headers({
@@ -80,33 +111,35 @@ const Dashboard = () => {
         }),
       }
     );
+    //setData(resp.json());
     const respJson = await resp.json();
-    setDashboardDetails(respJson);
-    console.log("dashboard details:", dashboardDetails.scannedCoupons);
-    setLoading(false);
+    // console.log("response from company details: ", respJson);
+    setCompanyDetails(respJson);
+    // setLoading(false);
   };
-
-  // console.log('dashboard details:',dashboardDetails);
-  // Object.keys(dashboardDetails).forEach(function(key, index) {
-  // dashboardDetails.[key]
-  // console.log("dash",dashboardDetails?.[key]);
-  // });
+  console.log("company details:", companydetails);
+  let companylogo =
+    !isEmpty(companydetails) &&
+    !companydetails.message &&
+    companydetails?.map((company) => company.companyLogo)[CompanyId - 1];
+  sessionStorage.setItem("companylogo", companylogo);
+  // console.log('company logo: ' ,companylogo);
 
   return (
     <>
       {loading ? (
-        <Loader color='#16219d' type="spinner-circle" />
+        <Loader color="#16219d" type="spinner-circle" />
       ) : (
         <div>
           <div className="d-flex align-items-center justify-content-evenly form_transaction">
-            <label className="mb-0">Start Date:</label>
+            <label className="mb-0 mr-2">Start Date:</label>
             <DatePicker
               className="form-control"
               selected={startDate}
               dateFormat="yyyy/MM/dd"
               onChange={(date) => setStartDate(date)}
             />
-            <label className="mb-0">End Date:</label>
+            <label className="mb-0 mr-2 ml-2">End Date:</label>
             <DatePicker
               className="form-control"
               selected={endDate}
@@ -126,8 +159,10 @@ const Dashboard = () => {
             {/* {dashboardDetails?.scannedCoupon} */}
             <div>
               <div className="d-flex justify-content-around">
-                {dashboardDetails?.length !== 0 &&
-                  dashboardDetails.scannedCoupons?.length !== 0 && (
+                {!isEmpty(dashboardDetails) &&
+                  typeof dashboardDetails.scannedCoupons !==
+                  "undefined" &&
+                  dashboardDetails.scannedCoupons.length > 0 && (
                     <div className="scanned-container">
                       <>
                         <div
@@ -150,33 +185,45 @@ const Dashboard = () => {
                           <tbody>
                             <tr>
                               <td>
-                                {dashboardDetails?.scannedCoupons[0]?.faceValue}
-                              </td>
-                              <td>
-                                {
+                                {typeof dashboardDetails.scannedCoupons !==
+                                  "undefined" &&
+                                  dashboardDetails.scannedCoupons.length > 0 &&
                                   dashboardDetails?.scannedCoupons[0]
-                                    ?.scannedCount
-                                }
+                                    ?.faceValue}
                               </td>
                               <td>
-                                {
+                                {typeof dashboardDetails.scannedCoupons !==
+                                  "undefined" &&
+                                  dashboardDetails.scannedCoupons.length > 0 &&
+                                  dashboardDetails?.scannedCoupons[0]
+                                    ?.scannedCount}
+                              </td>
+                              <td>
+                                {typeof dashboardDetails.expiredCoupons !==
+                                  "undefined" &&
+                                  dashboardDetails.expiredCoupons.length > 0 &&
                                   dashboardDetails?.expiredCoupons[0]
                                     ?.expiredCoupons
                                 }
                               </td>
                               <td>
                                 {
-                                  dashboardDetails.transaction[0]
+                                  dashboardDetails?.transaction
                                     ?.transactionAmount
                                 }
                               </td>
                             </tr>
                             <tr>
                               <td>
-                                {dashboardDetails?.scannedCoupons[1]?.faceValue}
+                                {typeof dashboardDetails.scannedCoupons !==
+                                  "undefined" &&
+                                  dashboardDetails.scannedCoupons.length > 0 &&
+                                dashboardDetails?.scannedCoupons[1]?.faceValue}
                               </td>
                               <td>
-                                {
+                                {typeof dashboardDetails.scannedCoupons !==
+                                  "undefined" &&
+                                  dashboardDetails.scannedCoupons.length > 0 &&
                                   dashboardDetails?.scannedCoupons[1]
                                     ?.scannedCount
                                 }
@@ -184,10 +231,16 @@ const Dashboard = () => {
                             </tr>
                             <tr>
                               <td>
-                                {dashboardDetails?.scannedCoupons[2]?.faceValue}
+                                {typeof dashboardDetails.scannedCoupons !==
+                                  "undefined" &&
+                                  dashboardDetails.scannedCoupons.length > 0 &&
+                                dashboardDetails?.scannedCoupons[2]?.faceValue}
                               </td>
                               <td>
                                 {
+                                  typeof dashboardDetails.scannedCoupons !==
+                                  "undefined" &&
+                                  dashboardDetails.scannedCoupons.length > 0 &&
                                   dashboardDetails?.scannedCoupons[2]
                                     ?.scannedCount
                                 }
@@ -198,8 +251,10 @@ const Dashboard = () => {
                       </>
                     </div>
                   )}
-                {dashboardDetails.length !== 0 &&
-                  dashboardDetails.expiredCoupons.length !== 0 && (
+                {!isEmpty(dashboardDetails) &&
+                  typeof dashboardDetails.expiredCoupons !==
+                  "undefined" &&
+                  dashboardDetails.expiredCoupons.length > 0&& (
                     <div className="expired-container">
                       <h6
                         style={{
@@ -268,8 +323,8 @@ const Dashboard = () => {
                     </div>
                   )}
                 <div>
-                  {dashboardDetails.length !== 0 &&
-                    dashboardDetails.transaction.transactionAmount !== 0 && (
+                  {!isEmpty(dashboardDetails) &&
+                    dashboardDetails?.transaction?.transactionAmount !== 0 && (
                       <table>
                         {/* {dashboardDetails.expiredCoupons.length !== 0 && ( */}
                         <>

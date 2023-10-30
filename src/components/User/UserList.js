@@ -65,7 +65,7 @@ export default function UserList() {
       // alert("hello");
     }
   };
-  // console.log("registrations:", registrations);
+  console.log("registrations:", registrations);
 
   // console.log('shifted:',arr);
   // const userTypes = [];
@@ -129,6 +129,7 @@ export default function UserList() {
       });
       // console.log("initialValues",initialValues)
       // formik.handleSubmit(user);
+      // toggleEdit();
     navigate("/adduser");
     }
     
@@ -155,7 +156,6 @@ export default function UserList() {
         })
         .catch((error) => console.log(error));
     navigate("/userlist");
-        
     }
     
 
