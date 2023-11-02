@@ -148,7 +148,7 @@ const Dashboard = () => {
             />
             <button
               onClick={getDashboardDetails}
-              class="btn btn-primary"
+              className="btn btn-primary"
               style={{ margin: 10 }}
             >
               Submit
@@ -204,12 +204,6 @@ const Dashboard = () => {
                                   dashboardDetails.expiredCoupons.length > 0 &&
                                   dashboardDetails?.expiredCoupons[0]
                                     ?.expiredCoupons
-                                }
-                              </td>
-                              <td>
-                                {
-                                  dashboardDetails?.transaction
-                                    ?.transactionAmount
                                 }
                               </td>
                             </tr>

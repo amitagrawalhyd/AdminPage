@@ -49,7 +49,7 @@ const NotifyUsers = () => {
       const data = await response.json();
       // if(data.message){getUsers()}
       setRegistrations(data);
-      console.log('usersfrom notify users:',registrations);
+      // console.log('users from notify users:',data);
     } catch (error) {
       console.error("Error from get users api:", error);
       // alert("hello");
@@ -63,7 +63,7 @@ const NotifyUsers = () => {
     }
 
   // console.log('base64 image:',img.split(",").pop());
-  console.log("title and description from notify users:",title,description)
+  // console.log("title and description from notify users:",title,description)
 
   // const handleComplete= async () => {
   //   const completeTransations = await Promise.all(
@@ -81,36 +81,27 @@ const NotifyUsers = () => {
   //   );
   //   console.log("complete api response:",completeTransations);
   // }
-
   const handleNotify = async () => {
-
-    // fetch(`http://183.83.219.144:81/LMS/Notification/PushNotificationToUser/${title}/${description}/${registrationId}`, {
-    //   method: "POST",
-    //   headers: new Headers({
-    //     Authorization: `Bearer ${token}`,
-    //     "Content-Type": "application/json",
-    //   }),
-    // })
-    //   .then((response) => response.json())
-    //   .then((responseData) => {
-    //     console.log("response from savenotification:", responseData);
-    //   })
-    //   .catch((error) => console.log(error));
-
-      const NotifyUsers = await Promise.all(
-        selectedItems.map(async(user) => {
-          const response = await fetch(`http://183.83.219.144:81/LMS/Notification/PushNotificationToUser/${title}/${description}/${user.registrationId}`,
-          {
-          method:'GET',
-          headers: new Headers({
-            Authorization: `Bearer ${token}`,
-          }),
-          }
-          )
-          return await response.json();
-        })
-      );
-      console.log("complete api response from notify users:",NotifyUsers);
+          const NotifyUsers = await Promise.all(
+            selectedItems.map(async (user) => {
+              const response = await fetch(`http://183.83.219.144:81/LMS/Notification/PushNotificationToUser/${title}/${description}/${user.registrationId}`,
+              {
+                method:'GET',
+                headers: new Headers({
+                  Authorization: `Bearer ${token}`,
+                }),
+              }
+              )
+              return await response.json();
+            })
+            );
+            console.log("complete api response from notify users:",NotifyUsers);
+            NotifyUsers?.map((response) => {
+              if(!response || NotifyUsers.length===0) 
+              alert('failed to send notification')
+            })
+            document.getElementById("notification-form").reset();
+            // window.location.reload()
   }
 
   return (
@@ -143,7 +134,7 @@ const NotifyUsers = () => {
         </table>
         </div>
       <div className="notification-container">
-      <div className="notification-form">
+      <form className="notification-form">
       <h4>Send Notifications</h4>
         <input
           className="notification-title"
@@ -184,11 +175,11 @@ const NotifyUsers = () => {
             border: 0,
           }}
           className="btn btn-primary"
-          disabled={!title || !description}
+          disabled={!title || !description || selectedItems.length===0}
         >
           Notify
         </button>
-      </div>
+      </form>
       </div>
     </div>
   );

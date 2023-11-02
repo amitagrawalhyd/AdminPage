@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Constants } from "../constants/credentials";
-import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
+
 
 const PendingTransactons = () => {
   const CompanyId = sessionStorage.getItem('CompanyId');
   const token = sessionStorage.getItem('token');
   const [PendingTransactons, setPendingTransactions] = useState([]);
-  let heading = ["Select","Amount", "Name", "Mobile Number","Status", "UPI ID", "Date"];
+  let heading = ["Select","Amount", "Name", "Mobile Number", "UPI ID","Status", "Date"];
   const [allchecked, setAllChecked] = React.useState([]);
   const mobileNumber = sessionStorage.getItem('mobileNumber');
 // const [selectAll,setSelectAll] = useState(false);
@@ -14,6 +14,8 @@ const [selectAll, setSelectAll] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
   const [userDetalis,setUserDetails] = useState([]);
   const [usernumbers,setUserNumbers] = useState([]);
+  const navigate = useNavigate();
+
 
   const toggleSelectAll = () => {
     if (selectAll) {
@@ -68,6 +70,8 @@ const [selectAll, setSelectAll] = useState(false);
         return await response.json();
       })
     );
+    // navigate("/pendingtransactions");
+    window.location.reload();
     console.log("complete api response:",completeTransations);
   }
 

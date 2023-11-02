@@ -56,20 +56,30 @@ export const useAddUser = () => {
   return useContext(AddUserContext);
 };
 
+
 export default function AddUser() {
   const CompanyId = sessionStorage.getItem('CompanyId');
   const storedMobileNumber = sessionStorage.getItem("mobileNumber");
   const [registrationTypes, setRegistrationTypes] = useState([]); // types of registrations (distributor,dealer,mechanic)
   const [adminDetails, setAdminDetails] = useState([]); // admin details
   // const defaultOption = options[0]; //dropdown menu default option
-  const { initialValues, editmode,setEditmode } = useAddUser();
+  const { initialValues, editmode,setEditmode,setInitialValues } = useAddUser();
   const navigate = useNavigate();
   const parentRegistrationId = sessionStorage.getItem('parentRegistrationId')
   var adminRegistrationId = 0;
+  
+
+
+// (function () {
+//   // alert("I am here");
+//   setInitialValues
+//   // setEditmode(false);
+// })();
 
   // useEffect(() => {
   //   getAdminDetails();
   // }, []);
+
 
   useEffect(() => {
     getRegistrationTypes();
@@ -182,6 +192,7 @@ export default function AddUser() {
         })
         .catch((error) => console.log(error));
     },
+    // onReset: (values,{ resetForm }) => resetForm(),
   });
 
   return (
@@ -244,6 +255,7 @@ export default function AddUser() {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             value={formik.values.name}
+            autoComplete="nope"
           />
           {formik.touched.name && formik.errors.name ? (
             <p style={{ color: "red" }}>{formik.errors.name}</p>
@@ -332,6 +344,22 @@ export default function AddUser() {
             value={formik.values.panNumber}
           />
           <br />
+          <button
+            className="btn btn-warning"
+            style={{
+              // alignSelf: "flex-end",
+              position: "absolute",
+              bottom: 0,
+              // right: 40,
+              margin: 20,
+              border: 0,
+            }}
+            type="reset"
+            onClick={() => window.location.reload()}
+          >
+            Reset
+          </button>
+          
           <button
             className="btn btn-primary"
             style={{

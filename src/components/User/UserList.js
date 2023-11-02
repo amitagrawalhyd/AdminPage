@@ -7,6 +7,11 @@ import { create } from "@mui/material/styles/createTransitions";
 // import { getUsers } from "../../APIs/getUsers";
 import { useInitialValues, useAddUser} from './AddUser';
 import { useNavigate } from "react-router-dom";
+import { CSVLink } from "react-csv";
+import saveAs from 'file-saver';
+const ExcelJS = require("exceljs");
+
+
 
 export const getToken = () => {
   const token = sessionStorage.getItem("token");
@@ -22,8 +27,12 @@ export default function UserList() {
   const options = ["All", "Company", "Distributer", "Dealer", "Mechanic"]; //for dropdown
   const defaultOption = options[0]; //dropdown menu default option
   const [selected, setSelected] = useState(options[0]); //default value of dropdown
-  const { setInitialValues, setEditmode} = useAddUser();
+  const { setInitialValues, setEditmode, editmode} = useAddUser();
   const navigate = useNavigate();
+
+  if(editmode){
+    window.location.reload();
+  }
 
   // const [editMode, setEditMode] = useState(false);
   // const [token, setToken] = useState("");
@@ -65,7 +74,7 @@ export default function UserList() {
       // alert("hello");
     }
   };
-  console.log("registrations:", registrations);
+  // console.log("registrations:", registrations);
 
   // console.log('shifted:',arr);
   // const userTypes = [];
@@ -157,10 +166,71 @@ export default function UserList() {
         .catch((error) => console.log(error));
     navigate("/userlist");
     }
+
+    const exportExcelFile = () => {
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet("My Sheet");
+      // sheet.properties.defaultRowHeight = 80;
+  
+      // sheet.getRow(1).border = {
+      //   top: { style: "thick", color: { argb: "FFFF0000" } },
+      //   left: { style: "thick", color: { argb: "000000FF" } },
+      //   bottom: { style: "thick", color: { argb: "F08080" } },
+      //   right: { style: "thick", color: { argb: "FF00FF00" } },
+      // };
+      sheet.columns = [
+        {
+          header: "Mobile Number",
+          key: "mobileNumber",
+          width: 20,
+        },
+        {
+          header: "Name",
+          key: "name",
+          width: 20,
+        },
+        {
+          header: "City",
+          key: "city",
+          width: 20,
+        },
+        {
+          header: "User Type",
+          key: "userType",
+          width: 15,
+        }
+      ];
+      console.log('registrations before export:',registrations);
+      const promise = Promise.all(
+        filteredUsers?.map(async (user) => {
+          // const rowNumber = index + 1;
+          sheet.addRow({
+            mobileNumber: user.registerMobileNumber,
+            name: user.registerName,
+            city: user.city,
+            userType: user.registrationType,
+          });
+        // return(registrations);
+        })
+      );
+      promise.then(() =>{console.log('pormise:',promise)
+    })
+
+    
+    // registrations.forEach((user) => {
+    //   sheet.addRow(user);
+    // });
+
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      saveAs(blob, 'userlist.xlsx');
+    });
+    }
+    
     
 
   return (
-    <div style={{ width: "100%", display: "flex", flexDirection: "row" }}>
+    <div style={{ width: "100%",}}>
       <div style={{ width: "70%" }}>
         <h4 className="header mb-2">User List</h4>
         <Dropdown
@@ -228,6 +298,12 @@ export default function UserList() {
           </tbody>
         </table>
       </div>
+      <button
+        className="btn btn-secondary float-end mt-2 mb-2"
+        onClick={exportExcelFile}
+      >
+        Export to Excel
+      </button>
     </div>
   );
 }

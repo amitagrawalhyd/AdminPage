@@ -3,7 +3,7 @@ import AttachFileIcon from '@mui/icons-material/AttachFile';
 import Cookies from 'js-cookie';
 import '../App.css';
 import {getToken} from './User/UserList';
-
+import { useNavigate } from "react-router-dom";
 
 const Notifications = () => {
   const [title, setTitle] = useState();
@@ -18,8 +18,7 @@ const Notifications = () => {
   const [registrations, setRegistrations] = useState([]); // users
   let heading = ["Select","Mobile Number", "Name"];
   const [selectedItems, setSelectedItems] = useState([]);
-  const [notifyall,setNotifyall] = useState(false);
-
+const navigate = useNavigate();
   const handleCheckboxChange = (user) => {
     if (selectedItems.includes(user)) {
       setSelectedItems(selectedItems.filter((item) => item !== user));
@@ -101,14 +100,22 @@ const Notifications = () => {
     })
       .then((response) => response.json())
       .then((responseData) => {
+        if(responseData){
+          alert('sent notification')
+        }
+        else {
+          alert('failed to send notification')
+        }
         console.log("response from savenotification:", responseData);
       })
       .catch((error) => console.log(error));
+      // navigate('/notifications');
+      document.getElementById("notification-form").reset();
   }
 
   return (
       <div className="notification-container">
-      <div className="notification-form">
+      <form className="notification-form">
       <h4>Send Notifications</h4>
         <input
           className="notification-title"
@@ -153,7 +160,7 @@ const Notifications = () => {
         >
           Notify
         </button>
-      </div>
+      </form>
       <p style={{marginTop:10}}>Click <a href="/notifyusers" style={{textDecoration:'underline',cursor:'pointer'}}>here</a> to notify selected users</p>
       </div>
   );

@@ -8,6 +8,8 @@ import Dropdown from "react-dropdown";
 import "react-dropdown/style.css";
 import Autocomplete from "react-autocomplete";
 import { compareAsc } from "date-fns";
+import saveAs from 'file-saver';
+const ExcelJS = require("exceljs");
 
 const Transactions = () => {
   const CompanyId = sessionStorage.getItem('CompanyId');
@@ -21,8 +23,8 @@ const Transactions = () => {
   let heading = [
     "Select",
     "Amount",
-    "Name",
     "Mobile Number",
+    "Name",
     "Payout Status",
     "Transaction ID",
     "Status",
@@ -44,6 +46,13 @@ const Transactions = () => {
     }
   };
   console.log('selected items:', selectedItems);
+  function formatDate (input) {
+    var datePart = input.match(/\d+/g),
+    year = datePart[0], // get only two digits
+    month = datePart[1], day = datePart[2];
+  
+    return day+'-'+month+'-'+year;
+  }
 
   function formatStartDate(separator = "-") {
     let date = startDate.getDate();
@@ -179,10 +188,101 @@ const Transactions = () => {
   }
 
   // console.log("here;", filteredTransactions);
+  const exportExcelFile = () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("My Sheet");
+    // sheet.properties.defaultRowHeight = 80;
+
+    // sheet.getRow(1).border = {
+    //   top: { style: "thick", color: { argb: "FFFF0000" } },
+    //   left: { style: "thick", color: { argb: "000000FF" } },
+    //   bottom: { style: "thick", color: { argb: "F08080" } },
+    //   right: { style: "thick", color: { argb: "FF00FF00" } },
+    // };
+    sheet.columns = [
+      {
+        header: "Amount",
+        key: "amount",
+        width: 20,
+      },
+      {
+        header: "Mobile Number",
+        key: "mobileNumber",
+        width: 20,
+      },
+      {
+        header: "Name",
+        key: "name",
+        width: 20,
+      },
+      {
+        header: "Payout Status",
+        key: "payoutStatus",
+        width: 15,
+      },
+      {
+        header: "Transaction Id",
+        key: "transactionId",
+        width: 25,
+      },
+      {
+        header: "Status",
+        key: "status",
+        width: 15,
+      },
+      {
+        header: "Date",
+        key: "date",
+        width: 15,
+      },
+
+    ];
+    console.log('registrations before export:',filterTransactions);
+    const promise = Promise.all(
+      filteredTransactions?.map(async (transaction) => {
+        // const rowNumber = index + 1;
+        sheet.addRow({
+          amount: transaction.transactionAmount,
+          name: transaction.registerName,
+          mobileNumber:transaction.registerMobileNumber,
+          payoutStatus: transaction.payoutStatus,
+transactionId:transaction.payoutTransactionId,
+          status:transaction.isPaid &&
+            transaction.isActive &&
+            "Completed" ||
+          !transaction.isPaid &&
+            transaction.isActive &&
+            "Pending" ||
+          !transaction.isPaid &&
+            !transaction.isActive &&
+            "Rejected",
+            date:formatDate(transaction.transactionDate.split("T")[0])
+        });
+      // return(registrations);
+      })
+    );
+    promise.then(() =>{console.log('pormise:',promise)
+  })
+
+  
+  // registrations.forEach((user) => {
+  //   sheet.addRow(user);
+  // });
+  const amountColumn = sheet.getColumn('amount');
+  amountColumn.alignment = { horizontal: 'center' }; 
+
+  workbook.xlsx.writeBuffer().then((buffer) => {
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, 'transactions.xlsx');
+  });
+  }
+
   return (
     <div>
       <h4 className="header mb-2">Transactions requested</h4>
-      <button className="btn btn-primary" onClick={handleRequeue}>Requeue</button> 
+      <button className="btn btn-primary" onClick={handleRequeue}
+      disabled={selectedItems.length===0}
+      >Requeue</button> 
       <div className="d-flex align-items-center justify-content-between form_transaction">
         <input
           className="form-control ml-0"
@@ -328,11 +428,11 @@ const Transactions = () => {
                           ₹{transaction.transactionAmount}
                         </td>
                         <td className="transaction">
-                          {" "}
-                          {transaction.registerName}
+                          {transaction.registerMobileNumber}
                         </td>
                         <td className="transaction">
-                          {transaction.registerMobileNumber}
+                          {" "}
+                          {transaction.registerName}
                         </td>
                         {/* <td className="transaction">{transaction.city}</td> */}
                         {/* <td className="transaction">{transaction.upiAddress}</td> */}
@@ -350,7 +450,7 @@ const Transactions = () => {
                             "Rejected"}
                         </td>
                         <td className="transaction">
-                          {transaction.transactionDate.split("T")[0]}
+                          {formatDate(transaction.transactionDate.split("T")[0])}
                         </td>
                       </tr>
                     ))}
@@ -360,10 +460,16 @@ const Transactions = () => {
         </div>
         {filteredTransactions?.length !== 0 && (
           <div>
-            <button className="btn btn-secondary mb-2" onClick={onDownload}>
+            {/* <button className="btn btn-secondary mb-2" onClick={onDownload}>
               {" "}
               Export to Excel{" "}
-            </button>
+            </button> */}
+            <button
+        className="btn btn-secondary mb-2"
+        onClick={exportExcelFile}
+      >
+        Export to Excel{' '}
+      </button>
             <button
               className="btn btn-secondary mb-2 mx-2"
               onClick={() => toPDF()}

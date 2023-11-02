@@ -55,15 +55,15 @@ export default function Login() {
 
   return (
       <div className="container">
-        <div class="split-one">
-          <div class="left-heading">
+        <div className="split-one">
+          <div className="left-heading">
             Coupon App <br />
-            <div class="left heading">Admin</div>
+            <div className="left heading">Admin</div>
           </div>
-          {/* <div class="left-heading">Admin</div> */}
+          {/* <div className="left-heading">Admin</div> */}
         </div>
 
-        <div class="split-two">
+        <div className="split-two">
           <div className="login-form">
             <form method="post" onSubmit={handleSubmit}>
               <h3 className="text-center font-weight-bold">Login</h3>

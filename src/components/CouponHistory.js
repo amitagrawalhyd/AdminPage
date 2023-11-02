@@ -26,6 +26,14 @@ const CouponHistory = () => {
   const { toPDF, targetRef } = usePDF({ filename: "coupon-history.pdf" }); //for pdf
   const tableRef = useRef(null); // for excel
 
+  function formatDate (input) {
+    var datePart = input.match(/\d+/g),
+    year = datePart[0], // get only two digits
+    month = datePart[1], day = datePart[2];
+  
+    return day+'-'+month+'-'+year;
+  }
+
   function formatStartDate(separator = "-") {
     let date = startDate.getDate();
     let month = startDate.getMonth() + 1;
@@ -102,7 +110,7 @@ const CouponHistory = () => {
           />
           <button
             type="button"
-            class="btn btn-primary"
+            className="btn btn-primary"
             style={{ margin: 10 }}
             onClick={getCouponHistory}
           >
@@ -133,7 +141,9 @@ const CouponHistory = () => {
                         </td>
                         <td className="coupon"> {coupon.registerName}</td>
                         <td className="coupon">
-                          {coupon.changeDate.replace("T", " ").split(".")[0]}
+                          {formatDate(coupon.changeDate.replace("T", " ").split(" ")[0])}
+                          {' '}
+                          {coupon.changeDate.split("T")[1].split('.')[0]}
                         </td>
                       </tr>
                     ))}
