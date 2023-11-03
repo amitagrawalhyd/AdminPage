@@ -107,7 +107,7 @@ const Dashboard = () => {
       {
         method: "GET",
         headers: new Headers({
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${getToken()}`,
         }),
       }
     );
@@ -131,17 +131,17 @@ const Dashboard = () => {
         <Loader color="#16219d" type="spinner-circle" />
       ) : (
         <div>
-          <div className="d-flex align-items-center justify-content-evenly form_transaction">
+          <div className="dashboard-form">
             <label className="mb-0 mr-2">Start Date:</label>
             <DatePicker
-              className="form-control"
+              className="form-control "
               selected={startDate}
               dateFormat="yyyy/MM/dd"
               onChange={(date) => setStartDate(date)}
             />
             <label className="mb-0 mr-2 ml-2">End Date:</label>
             <DatePicker
-              className="form-control"
+              className="form-control "
               selected={endDate}
               dateFormat="yyyy/MM/dd"
               onChange={(date) => setEndDate(date)}
@@ -160,174 +160,99 @@ const Dashboard = () => {
             <div>
               <div className="d-flex justify-content-around">
                 {!isEmpty(dashboardDetails) &&
-                  typeof dashboardDetails.scannedCoupons !==
-                  "undefined" &&
+                  typeof dashboardDetails.scannedCoupons !== "undefined" &&
                   dashboardDetails.scannedCoupons.length > 0 && (
                     <div className="scanned-container">
                       <>
                         <div
                           style={{
                             borderBottom: "1px solid black",
-                            paddingBottom: "30px",
+                            // paddingBottom: "30px",
+                          marginBottom: 5,
                             display: "flex",
                             justifyContent: "center",
                             // alignItems: "center",
                           }}
                         >
-                          <h6>Scanned Coupons</h6>
+                          <th>SCANNED COUPONS</th>
                         </div>
 
                         <table>
                           <>
-                            <th scope="col-md-4">Coupon Value</th>
-                            <th>Number of Scanned Coupons</th>
+                            <th style={{padding:'0 10px'}}>Face Value</th>
+                            <th style={{padding:'0 10px'}}>Count</th>
+                            <th style={{padding:'0 10px'}}>Amount</th>
                           </>
                           <tbody>
-                            <tr>
-                              <td>
-                                {typeof dashboardDetails.scannedCoupons !==
-                                  "undefined" &&
-                                  dashboardDetails.scannedCoupons.length > 0 &&
-                                  dashboardDetails?.scannedCoupons[0]
-                                    ?.faceValue}
-                              </td>
-                              <td>
-                                {typeof dashboardDetails.scannedCoupons !==
-                                  "undefined" &&
-                                  dashboardDetails.scannedCoupons.length > 0 &&
-                                  dashboardDetails?.scannedCoupons[0]
-                                    ?.scannedCount}
-                              </td>
-                              <td>
-                                {typeof dashboardDetails.expiredCoupons !==
-                                  "undefined" &&
-                                  dashboardDetails.expiredCoupons.length > 0 &&
-                                  dashboardDetails?.expiredCoupons[0]
-                                    ?.expiredCoupons
-                                }
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                {typeof dashboardDetails.scannedCoupons !==
-                                  "undefined" &&
-                                  dashboardDetails.scannedCoupons.length > 0 &&
-                                dashboardDetails?.scannedCoupons[1]?.faceValue}
-                              </td>
-                              <td>
-                                {typeof dashboardDetails.scannedCoupons !==
-                                  "undefined" &&
-                                  dashboardDetails.scannedCoupons.length > 0 &&
-                                  dashboardDetails?.scannedCoupons[1]
-                                    ?.scannedCount
-                                }
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                {typeof dashboardDetails.scannedCoupons !==
-                                  "undefined" &&
-                                  dashboardDetails.scannedCoupons.length > 0 &&
-                                dashboardDetails?.scannedCoupons[2]?.faceValue}
-                              </td>
-                              <td>
-                                {
-                                  typeof dashboardDetails.scannedCoupons !==
-                                  "undefined" &&
-                                  dashboardDetails.scannedCoupons.length > 0 &&
-                                  dashboardDetails?.scannedCoupons[2]
-                                    ?.scannedCount
-                                }
-                              </td>
-                            </tr>
+                            {typeof dashboardDetails.scannedCoupons !==
+                              "undefined" &&
+                              dashboardDetails.scannedCoupons.length > 0 &&
+                              dashboardDetails?.scannedCoupons.map((coupon) => (
+                                <tr>
+                                  <td style={{textAlign:'center'}}> {coupon?.faceValue}</td>
+                                  <td style={{textAlign:'center'}}> {coupon?.scannedCount}</td>
+                                  <td style={{textAlign:'center'}}>
+                                    {coupon?.faceValue * coupon?.scannedCount}
+                                  </td>
+                                </tr>
+                              ))}
                           </tbody>
                         </table>
                       </>
                     </div>
                   )}
                 {!isEmpty(dashboardDetails) &&
-                  typeof dashboardDetails.expiredCoupons !==
-                  "undefined" &&
-                  dashboardDetails.expiredCoupons.length > 0&& (
+                  typeof dashboardDetails.expiredCoupons !== "undefined" &&
+                  dashboardDetails.expiredCoupons.length > 0 && (
                     <div className="expired-container">
-                      <h6
+                      <th
                         style={{
                           color: "black",
-                          marginBottom: 10,
+                          marginBottom: 5,
                           borderBottom: "1px solid black",
+                          display:'flex',
+                          justifyContent:'center'
                         }}
                       >
-                        Expired Coupons
-                      </h6>
+                        EXPIRED COUPONS
+                      </th>
                       <table>
                         {/* {dashboardDetails.expiredCoupons.length !== 0 && ( */}
                         <>
-                          <th>Coupon Value</th>
-                          <th>Number of coupons</th>
+                          <th style={{padding:'0 10px'}}>Face Value</th>
+                          <th style={{padding:'0 10px'}}>Count</th>
+                          <th style={{padding:'0 10px'}}>Amount</th>
                         </>
                         {/* )} */}
                         <tbody>
-                          <tr>
-                            <td>
-                              {dashboardDetails?.expiredCoupons[0]?.faceValue}
-                            </td>
-                            <td>
-                              {
-                                dashboardDetails?.expiredCoupons[0]
-                                  ?.expiredCount
-                              }
-                            </td>
-                            <td>
-                              {
-                                dashboardDetails?.expiredCoupons[0]
-                                  ?.expiredCoupons
-                              }
-                            </td>
-                            <td>
-                              {
-                                dashboardDetails.transaction[0]
-                                  ?.transactionAmount
-                              }
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              {dashboardDetails?.expiredCoupons[1]?.faceValue}
-                            </td>
-                            <td>
-                              {
-                                dashboardDetails?.expiredCoupons[1]
-                                  ?.expiredCount
-                              }
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              {dashboardDetails?.expiredCoupons[2]?.faceValue}
-                            </td>
-                            <td>
-                              {
-                                dashboardDetails?.expiredCoupons[2]
-                                  ?.expiredCount
-                              }
-                            </td>
-                          </tr>
+                          {typeof dashboardDetails.expiredCoupons !==
+                            "undefined" &&
+                            dashboardDetails.expiredCoupons.length > 0 &&
+                            dashboardDetails?.expiredCoupons.map((coupon) => (
+                              <tr>
+                                <td style={{textAlign:'center'}}> {coupon?.faceValue}</td>
+                                <td style={{textAlign:'center'}}> {coupon?.expiredCount}</td>
+                                <td style={{textAlign:'center'}}>
+                                  {coupon?.faceValue * coupon?.expiredCount}
+                                </td>
+                              </tr>
+                            ))}
                         </tbody>
                       </table>
                     </div>
                   )}
-                <div>
-                  {!isEmpty(dashboardDetails) &&
-                    dashboardDetails?.transaction?.transactionAmount !== 0 && (
+                <div style={{border:'1px solid black',margin:'0 10px'}}>
+                  {typeof dashboardDetails.transaction !==
+                            "undefined" &&
+                    dashboardDetails?.transaction?.transactionAmount > 0 && (
                       <table>
                         {/* {dashboardDetails.expiredCoupons.length !== 0 && ( */}
                         <>
-                          <th>Transferred Amount</th>
+                          <th style={{borderBottom:'1px solid black'}}>TRANSFERRED AMOUNT</th>
                         </>
-                        {/* )} */}
                         <tbody>
                           <tr>
-                            <td>
+                            <td style={{fontSize:40,textAlign:'center'}}>
                               {dashboardDetails?.transaction?.transactionAmount}
                             </td>
                           </tr>
@@ -335,12 +260,9 @@ const Dashboard = () => {
                       </table>
                     )}
                 </div>
-                {/* <p>facevalue   :{dashboardDetails?.scannedCoupons[0]?.faceValue} </p> */}
-                {/* <p>coupon count:{dashboardDetails?.scannedCoupons[0]?.scannedCount}</p>  */}
               </div>
             </div>
           </div>
-          <div></div>
         </div>
       )}
     </>
