@@ -6,11 +6,10 @@ import "react-dropdown/style.css";
 import { create } from "@mui/material/styles/createTransitions";
 // import { getUsers } from "../../APIs/getUsers";
 import { useInitialValues, useAddUser} from './AddUser';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, } from "react-router-dom";
 import { CSVLink } from "react-csv";
 import saveAs from 'file-saver';
 const ExcelJS = require("exceljs");
-
 
 
 export const getToken = () => {
@@ -27,12 +26,13 @@ export default function UserList() {
   const options = ["All", "Company", "Distributer", "Dealer", "Mechanic"]; //for dropdown
   const defaultOption = options[0]; //dropdown menu default option
   const [selected, setSelected] = useState(options[0]); //default value of dropdown
-  const { setInitialValues, setEditmode, editmode} = useAddUser();
+  const { setInitialValues, setEditmode, setEditValues} = useAddUser();
   const navigate = useNavigate();
+  setEditmode(false);
 
-  if(editmode){
-    window.location.reload();
-  }
+  // if(editmode){
+  //   navigate('/userlist')
+  // }
 
   // const [editMode, setEditMode] = useState(false);
   // const [token, setToken] = useState("");
@@ -100,18 +100,18 @@ export default function UserList() {
   // console.log('selected from user list:',selected)
 
   function filterUsers(user) {
-    if (user.registrationType == "Company" && selected == "Company") {
+    if (user.registrationType === "Company" && selected === "Company") {
       return user;
     } else if (
-      user.registrationType == "Distributer" &&
-      selected == "Distributer"
+      user.registrationType === "Distributer" &&
+      selected === "Distributer"
     ) {
       return user;
-    } else if (user.registrationType == "Dealer" && selected == "Dealer") {
+    } else if (user.registrationType === "Dealer" && selected === "Dealer") {
       return user;
-    } else if (user.registrationType == "Mechanic" && selected == "Mechanic") {
+    } else if (user.registrationType === "Mechanic" && selected === "Mechanic") {
       return user;
-    } else if (selected == "All") {
+    } else if (selected === "All") {
       return user;
     }
   }
@@ -123,7 +123,7 @@ export default function UserList() {
     function handleEdit(user) {
       console.log("user to be edited", user);
       setEditmode(true);
-      setInitialValues({
+      setEditValues({
         dropdown: user.registrationTypeExtId,
         mobileNumber: user.registerMobileNumber,
         name: user.registerName,
@@ -227,7 +227,6 @@ export default function UserList() {
     });
     }
     
-    
 
   return (
     <div style={{ width: "100%",}}>
@@ -257,6 +256,8 @@ export default function UserList() {
                   <td className="user">{user.city}</td>
                   <td className="user">{user.registrationType}</td>
                   <td>
+                    {user.registrationType !== "Company" && 
+                    <>
                     <button
                       // className={user.isActive? "btn btn-secondary": "btn btn-light" } 
                        style={{color:'white',
@@ -292,6 +293,8 @@ export default function UserList() {
                     >
                       {user.isActive ? "Delete" : "Restore"}
                     </button>
+                    </>
+                  }
                   </td>
                 </tr>
               ))}

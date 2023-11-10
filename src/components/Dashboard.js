@@ -26,7 +26,8 @@ const Dashboard = () => {
   const [dashboardDetails, setDashboardDetails] = useState({});
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
-  // const {setCompanyLogo} = useAddUser();
+  const {setEditmode} = useAddUser();
+  setEditmode(false);
 
   function formatStartDate(separator = "-") {
     let date = startDate.getDate();
@@ -60,15 +61,16 @@ const Dashboard = () => {
   // setStartDate(date.toLocaleDateString("fr-CA"));
 
   const decodedToken = atob(token);
-  console.log("decoded token", JSON.parse(atob(token)).RegistrationId);
+  // console.log("decoded token", JSON.parse(atob(token)).RegistrationId);
 
   const handleSubmit = () => {
-    console.log("current date", currentDate);
+    // console.log("current date", currentDate);
     // e.preventDefault();
     // console.log('start date from handler:',startDate);
   };
 
   const getDashboardDetails = async () => {
+    console.log('dashboad details called')
     setLoading(true);
     const resp = await fetch(
       `http://183.83.219.144:81/LMS/Coupon/CouponSummary/${CompanyId}/${mobileNumber}?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
@@ -78,51 +80,49 @@ const Dashboard = () => {
           Authorization: `Bearer ${getToken()}`,
         }),
       }
-    );
+    )
+    .catch((error) => console.log(error));
     const respJson = await resp.json();
     setDashboardDetails(respJson);
     setLoading(false);
   };
-  console.log("dashboard details:", dashboardDetails);
+  // console.log("dashboard details:", dashboardDetails,token);
   // console.log('dashboardDetails.scannedCoupons?.length: ',dashboardDetails.scannedCoupons?.length)
-  console.log(
-    "dashboard condition:",
-    typeof dashboardDetails.scannedCoupons !== "undefined" &&
-      dashboardDetails.scannedCoupons.length > 0
-  );
+
   // Object.keys(dashboardDetails).forEach(function(key, index) {
   // dashboardDetails.[key]
   // console.log("dash",dashboardDetails?.[key]);
   // });
   const [companydetails, setCompanyDetails] = useState({});
   useEffect(() => {
-    getCompanyDetails();
+    // getCompanyDetails();
     getDashboardDetails();
   }, []);
 
-  const getCompanyDetails = async () => {
-    // console.log('loading data:', storedMobileNumber, storedToken);
-    const resp = await fetch(
-      `http://183.83.219.144:81/LMS/Company/Companies/${CompanyId}`,
-      {
-        method: "GET",
-        headers: new Headers({
-          Authorization: `Bearer ${getToken()}`,
-        }),
-      }
-    );
-    //setData(resp.json());
-    const respJson = await resp.json();
-    // console.log("response from company details: ", respJson);
-    setCompanyDetails(respJson);
-    // setLoading(false);
-  };
-  console.log("company details:", companydetails);
-  let companylogo =
-    !isEmpty(companydetails) &&
-    !companydetails.message &&
-    companydetails?.map((company) => company.companyLogo)[CompanyId - 1];
-  sessionStorage.setItem("companylogo", companylogo);
+  // const getCompanyDetails = async () => {
+  //   console.log('company details called')
+  //   // console.log('loading data:', storedMobileNumber, storedToken);
+  //   const resp = await fetch(
+  //     `http://183.83.219.144:81/LMS/Company/Companies/${CompanyId}`,
+  //     {
+  //       method: "GET",
+  //       headers: new Headers({
+  //         Authorization: `Bearer ${getToken()}`,
+  //       }),
+  //     }
+  //   ).catch(error => console.log('error fetching dashboard details:',error))
+  //   //setData(resp.json());
+  //   const respJson = await resp.json();
+  //   // console.log("response from company details: ", respJson);
+  //   setCompanyDetails(respJson);
+  //   // setLoading(false);
+  // };
+  // console.log("company details:", companydetails);
+    // let companylogo =
+    // !isEmpty(companydetails) &&
+    // !companydetails.message &&
+    // companydetails?.map((company) => company.companyLogo)[CompanyId - 1];
+    // sessionStorage.setItem("companylogo", companylogo);
   // console.log('company logo: ' ,companylogo);
 
   return (
@@ -134,14 +134,14 @@ const Dashboard = () => {
           <div className="dashboard-form">
             <label className="mb-0 mr-2">Start Date:</label>
             <DatePicker
-              className="form-control "
+            className="form-control"
               selected={startDate}
               dateFormat="yyyy/MM/dd"
               onChange={(date) => setStartDate(date)}
             />
             <label className="mb-0 mr-2 ml-2">End Date:</label>
             <DatePicker
-              className="form-control "
+              className="form-control"
               selected={endDate}
               dateFormat="yyyy/MM/dd"
               onChange={(date) => setEndDate(date)}
@@ -155,29 +155,27 @@ const Dashboard = () => {
             </button>
           </div>
 
-          <div className="dashboard-container">
+          <div className="dashboard-details">
             {/* {dashboardDetails?.scannedCoupon} */}
             <div>
-              <div className="d-flex justify-content-around">
+              <div className="d-flex justify-content-around mt-5">
                 {!isEmpty(dashboardDetails) &&
-                  typeof dashboardDetails.scannedCoupons !== "undefined" &&
-                  dashboardDetails.scannedCoupons.length > 0 && (
-                    <div className="scanned-container">
+                  typeof dashboardDetails.scannedCoupons !== "undefined" && (
+                    <div className="scanned-container box">
                       <>
                         <div
-                          style={{
-                            borderBottom: "1px solid black",
-                            // paddingBottom: "30px",
-                          marginBottom: 5,
-                            display: "flex",
-                            justifyContent: "center",
-                            // alignItems: "center",
-                          }}
-                        >
+                            style={{
+                              color: "#555",
+                              marginBottom: 5,
+                              borderBottom: "1px solid #ddd",
+                              display:'flex',
+                              justifyContent:'center'
+                            }}
+                                >
                           <th>SCANNED COUPONS</th>
                         </div>
 
-                        <table>
+                        <table >
                           <>
                             <th style={{padding:'0 10px'}}>Face Value</th>
                             <th style={{padding:'0 10px'}}>Count</th>
@@ -186,7 +184,7 @@ const Dashboard = () => {
                           <tbody>
                             {typeof dashboardDetails.scannedCoupons !==
                               "undefined" &&
-                              dashboardDetails.scannedCoupons.length > 0 &&
+                              dashboardDetails.scannedCoupons.length > 0 ?
                               dashboardDetails?.scannedCoupons.map((coupon) => (
                                 <tr>
                                   <td style={{textAlign:'center'}}> {coupon?.faceValue}</td>
@@ -195,21 +193,28 @@ const Dashboard = () => {
                                     {coupon?.faceValue * coupon?.scannedCount}
                                   </td>
                                 </tr>
-                              ))}
+                              )): (
+                                <tr>
+                                <td style={{textAlign:'center'}}> 0</td>
+                                <td style={{textAlign:'center'}}> 0</td>
+                                <td style={{textAlign:'center'}}>
+                                  0
+                                </td>
+                              </tr>
+                              )}
                           </tbody>
                         </table>
                       </>
                     </div>
                   )}
                 {!isEmpty(dashboardDetails) &&
-                  typeof dashboardDetails.expiredCoupons !== "undefined" &&
-                  dashboardDetails.expiredCoupons.length > 0 && (
-                    <div className="expired-container">
+                  typeof dashboardDetails.expiredCoupons !== "undefined" && (
+                    <div className="expired-container box">
                       <th
                         style={{
-                          color: "black",
+                          color: "#555",
                           marginBottom: 5,
-                          borderBottom: "1px solid black",
+                          borderBottom: "1px solid #ddd",
                           display:'flex',
                           justifyContent:'center'
                         }}
@@ -227,7 +232,7 @@ const Dashboard = () => {
                         <tbody>
                           {typeof dashboardDetails.expiredCoupons !==
                             "undefined" &&
-                            dashboardDetails.expiredCoupons.length > 0 &&
+                            dashboardDetails.expiredCoupons.length > 0 ?
                             dashboardDetails?.expiredCoupons.map((coupon) => (
                               <tr>
                                 <td style={{textAlign:'center'}}> {coupon?.faceValue}</td>
@@ -236,28 +241,39 @@ const Dashboard = () => {
                                   {coupon?.faceValue * coupon?.expiredCount}
                                 </td>
                               </tr>
-                            ))}
+                            )) :
+                            (
+                              <tr>
+                              <td style={{textAlign:'center'}}> 0</td>
+                              <td style={{textAlign:'center'}}> 0</td>
+                              <td style={{textAlign:'center'}}>
+                                0
+                              </td>
+                            </tr>
+                            )}
                         </tbody>
                       </table>
                     </div>
                   )}
-                <div style={{border:'1px solid black',margin:'0 10px'}}>
+                <div >
                   {typeof dashboardDetails.transaction !==
-                            "undefined" &&
-                    dashboardDetails?.transaction?.transactionAmount > 0 && (
-                      <table>
+                            "undefined" && (
+                              <div className="box">
+                      <table style={{border:'1px solid #ddd'}}>
                         {/* {dashboardDetails.expiredCoupons.length !== 0 && ( */}
                         <>
-                          <th style={{borderBottom:'1px solid black'}}>TRANSFERRED AMOUNT</th>
+                       
+                          <th style={{borderBottom:'1px solid #ddd'}}>TRANSFERRED AMOUNT</th>
                         </>
                         <tbody>
                           <tr>
                             <td style={{fontSize:40,textAlign:'center'}}>
-                              {dashboardDetails?.transaction?.transactionAmount}
+                             {dashboardDetails?.transaction?.transactionAmount}
                             </td>
                           </tr>
                         </tbody>
                       </table>
+                      </div>
                     )}
                 </div>
               </div>

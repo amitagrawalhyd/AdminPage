@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAddUser } from "./User/AddUser";
 
 
 const PendingTransactons = () => {
@@ -15,6 +16,8 @@ const [selectAll, setSelectAll] = useState(false);
   const [userDetalis,setUserDetails] = useState([]);
   const [usernumbers,setUserNumbers] = useState([]);
   const navigate = useNavigate();
+  const {setEditmode} = useAddUser();
+  setEditmode(false);
 
 
   const toggleSelectAll = () => {
@@ -71,7 +74,7 @@ const [selectAll, setSelectAll] = useState(false);
       })
     );
     // navigate("/pendingtransactions");
-    window.location.reload();
+    // window.location.reload();
     console.log("complete api response:",completeTransations);
   }
 
@@ -92,27 +95,27 @@ const [selectAll, setSelectAll] = useState(false);
   };
   // console.log("all pending transactions:", PendingTransactons);
 
-  const getUserDetails = async () => { //for user list
-    const resp = await fetch(
-      `http://183.83.219.144:81/LMS/Registration/GetRegistrations/${CompanyId}`,
-      {
-        method: "GET",
-        headers: new Headers({
-          Authorization: `Bearer ${token}`,
-        }),
-      }
-    );
-    // console.log('response: ', resp.json());
-    //setData(resp.json());
-    //console.log('data length: ', data.length);
-    const respJson = await resp.json();
-    setUserDetails(respJson);
-    // setLoading(false);
-  };
+  // const getUserDetails = async () => { //for user list
+  //   const resp = await fetch(
+  //     `http://183.83.219.144:81/LMS/Registration/GetRegistrations/${CompanyId}`,
+  //     {
+  //       method: "GET",
+  //       headers: new Headers({
+  //         Authorization: `Bearer ${token}`,
+  //       }),
+  //     }
+  //   );
+  //   // console.log('response: ', resp.json());
+  //   //setData(resp.json());
+  //   //console.log('data length: ', data.length);
+  //   const respJson = await resp.json();
+  //   setUserDetails(respJson);
+  //   // setLoading(false);
+  // };
   console.log("user datails.",userDetalis)
   useEffect(() => {
     getPendingTransactions();
-    getUserDetails();
+    // getUserDetails();
   }, []);
   console.log("checked values",allchecked);
 

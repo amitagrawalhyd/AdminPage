@@ -7,6 +7,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { usePDF } from "react-to-pdf";
 import { useDownloadExcel } from "react-export-table-to-excel";
+import { useAddUser } from "./User/AddUser";
 
 const CouponHistory = () => {
   const CompanyId = sessionStorage.getItem('CompanyId');
@@ -25,6 +26,8 @@ const CouponHistory = () => {
   const [endDate, setEndDate] = useState(new Date());
   const { toPDF, targetRef } = usePDF({ filename: "coupon-history.pdf" }); //for pdf
   const tableRef = useRef(null); // for excel
+  const {setEditmode} = useAddUser();
+  setEditmode(false);
 
   function formatDate (input) {
     var datePart = input.match(/\d+/g),
@@ -130,7 +133,7 @@ const CouponHistory = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {couponData
+                  {!couponData.message && couponData
                     ?.sort((a, b) => b.changeDate.localeCompare(a.changeDate))
                     ?.map((coupon) => (
                       <tr>

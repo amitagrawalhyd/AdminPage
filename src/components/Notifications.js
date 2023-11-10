@@ -4,6 +4,7 @@ import Cookies from 'js-cookie';
 import '../App.css';
 import {getToken} from './User/UserList';
 import { useNavigate } from "react-router-dom";
+import { useAddUser } from "./User/AddUser";
 
 const Notifications = () => {
   const [title, setTitle] = useState();
@@ -19,6 +20,8 @@ const Notifications = () => {
   let heading = ["Select","Mobile Number", "Name"];
   const [selectedItems, setSelectedItems] = useState([]);
 const navigate = useNavigate();
+const {setEditmode} = useAddUser();
+setEditmode(false);
   const handleCheckboxChange = (user) => {
     if (selectedItems.includes(user)) {
       setSelectedItems(selectedItems.filter((item) => item !== user));
@@ -102,15 +105,21 @@ const navigate = useNavigate();
       .then((responseData) => {
         if(responseData){
           alert('sent notification')
+          setTitle("");
+          setDescription("");
+          setFile("");
         }
         else {
           alert('failed to send notification')
+          setTitle("");
+          setDescription("");
+          setFile("");
         }
         console.log("response from savenotification:", responseData);
       })
       .catch((error) => console.log(error));
       // navigate('/notifications');
-      document.getElementById("notification-form").reset();
+      // document.getElementById("notification-form").reset();
   }
 
   return (
@@ -157,6 +166,7 @@ const navigate = useNavigate();
           }}
           className="btn btn-primary"
           disabled={!title || !description}
+          type="button"
         >
           Notify
         </button>

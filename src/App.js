@@ -46,6 +46,7 @@ import PageNotFound from "./components/PageNotFound";
 import Cookies from 'js-cookie';
 import {useNavigate} from "react-router-dom";
 import NotifyUsers from "./components/NotifyUsers";
+import CompanyDetails from "./APIs/CompanyDetails";
 
 
 // const Home = () => {
@@ -82,10 +83,11 @@ export const useAppContext = () => {
 
 const App = () => {
   const location = useLocation();
+  const companyId = sessionStorage.getItem('CompanyId');
   // const { collapseSidebar } = useProSidebar();
   const token = sessionStorage.getItem('token');
   const navigate = useNavigate();
-const companylogo=sessionStorage.getItem('companylogo')  
+// const companylogo=sessionStorage.getItem('companylogo')  
 
 
   return (
@@ -104,7 +106,7 @@ const companylogo=sessionStorage.getItem('companylogo')
               }}
               className="menu1"
             >
-            <img  className="logo" src={`data:image/jpg;base64,${companylogo}`}/>
+            <CompanyDetails companyId={companyId} />
             </MenuItem>
             <MenuItem
               component={<Link to="dashboard" className="link" />}

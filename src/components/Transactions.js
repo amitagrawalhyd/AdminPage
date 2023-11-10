@@ -9,6 +9,8 @@ import "react-dropdown/style.css";
 import Autocomplete from "react-autocomplete";
 import { compareAsc } from "date-fns";
 import saveAs from 'file-saver';
+import { useAddUser } from "./User/AddUser";
+
 const ExcelJS = require("exceljs");
 
 const Transactions = () => {
@@ -19,6 +21,8 @@ const Transactions = () => {
   const [endDate, setEndDate] = useState(new Date());
   const [transactions, setTransactions] = useState([]);
   const [allTransactions, setAllTransactions] = useState([]);
+  const {setEditmode} = useAddUser();
+  setEditmode(false);
 
   let heading = [
     "Select",
@@ -246,7 +250,7 @@ const Transactions = () => {
           name: transaction.registerName,
           mobileNumber:transaction.registerMobileNumber,
           payoutStatus: transaction.payoutStatus,
-transactionId:transaction.payoutTransactionId,
+          transactionId:transaction.payoutTransactionId,
           status:transaction.isPaid &&
             transaction.isActive &&
             "Completed" ||

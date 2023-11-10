@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Constants } from "../constants/credentials";
 import Cookies from "js-cookie";
-// import "";
+import { useAddUser } from "./User/AddUser";
+
 const ManualEntry = () => {
   const [couponCode, setCouponCode] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
   const CompanyId = sessionStorage.getItem('CompanyId');
   const token = sessionStorage.getItem('token');
+  const {setEditmode} = useAddUser();
+  setEditmode(false);
   function handleSubmit(event) {
     event.preventDefault();
     fetch(

@@ -3,11 +3,14 @@ import AttachFileIcon from '@mui/icons-material/AttachFile';
 import Cookies from 'js-cookie';
 import '../App.css';
 import {getToken} from './User/UserList';
+import * as Yup from "yup";
+import Dropdown from "react-dropdown";
+import "react-dropdown/style.css";
 
 
 const NotifyUsers = () => {
-  const [title, setTitle] = useState();
-  const [description, setDescription] = useState();
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const token = sessionStorage.getItem('token');
   const [file, setFile] = useState("");
   var startDate = new Date();
@@ -17,8 +20,37 @@ const NotifyUsers = () => {
   const CompanyId = sessionStorage.getItem('CompanyId');
   const [registrations, setRegistrations] = useState([]); // users
   let heading = ["Select","Mobile Number", "Name"];
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [notifyall,setNotifyall] = useState(false);
+  const [selectedItems, setSelectedItems] = useState([]);// for checkbox
+  const options = ["All", "Company", "Distributer", "Dealer", "Mechanic"]; //for dropdown
+  const defaultOption = options[0]; //dropdown menu default option
+  const [selected, setSelected] = useState(options[0]); //default value of dropdown
+var responseArray = [];
+
+function handleSelect(e) {
+  // on select dropdown
+  setSelected(e.value);
+  // getTransactions();
+}
+
+function filterUsers(user) {
+  if (user.registrationType === "Company" && selected === "Company") {
+    return user;
+  } else if (
+    user.registrationType === "Distributer" &&
+    selected === "Distributer"
+  ) {
+    return user;
+  } else if (user.registrationType === "Dealer" && selected === "Dealer") {
+    return user;
+  } else if (user.registrationType === "Mechanic" && selected === "Mechanic") {
+    return user;
+  } else if (selected === "All") {
+    return user;
+  }
+}
+
+const filteredUsers =
+  !registrations.message && registrations?.filter(filterUsers);
 
   const handleCheckboxChange = (user) => {
     if (selectedItems.includes(user)) {
@@ -82,7 +114,7 @@ const NotifyUsers = () => {
   //   console.log("complete api response:",completeTransations);
   // }
   const handleNotify = async () => {
-          const NotifyUsers = await Promise.all(
+           responseArray = await Promise.all(
             selectedItems.map(async (user) => {
               const response = await fetch(`http://183.83.219.144:81/LMS/Notification/PushNotificationToUser/${title}/${description}/${user.registrationId}`,
               {
@@ -95,18 +127,35 @@ const NotifyUsers = () => {
               return await response.json();
             })
             );
-            console.log("complete api response from notify users:",NotifyUsers);
-            NotifyUsers?.map((response) => {
-              if(!response || NotifyUsers.length===0) 
-              alert('failed to send notification')
-            })
-            document.getElementById("notification-form").reset();
+            console.log('responseArray:', responseArray);
+        // Check if any element in responseArray is false
+  const notificationFailed = responseArray.some((response) => !response);
+  console.log('notification status:',notificationFailed)
+
+  if (notificationFailed) {
+    alert('Failed to send some notifications.');
+    setTitle("");
+  } else {
+    alert('Notifications sent successfully.');
+};
+            // document.getElementById("notification-form").reset();
             // window.location.reload()
+            setTitle("");
+            setDescription("");
+            setFile("");
+            setSelectedItems([])
   }
 
   return (
     <div style={{display:'flex',flexDirection:'row',width:'100%'}}>
       <div style={{width:'40%'}}>
+      <Dropdown
+          className="user_dropdown"
+          options={options}
+          onChange={handleSelect}
+          value={defaultOption}
+          // placeholder="Select an option"
+        />
             <table className="table table-striped">
           <thead style={{ justifyContent: "center" }}>
             <tr>
@@ -117,7 +166,7 @@ const NotifyUsers = () => {
           </thead>
           <tbody>
             {!registrations.message &&
-              registrations?.map((user) => (
+              filteredUsers?.map((user) => (
                 <tr>
               <td>
                 <input
@@ -176,6 +225,7 @@ const NotifyUsers = () => {
           }}
           className="btn btn-primary"
           disabled={!title || !description || selectedItems.length===0}
+          type="button"
         >
           Notify
         </button>

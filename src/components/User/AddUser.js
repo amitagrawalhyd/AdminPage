@@ -1,6 +1,5 @@
-import React, { useState, useEffect, createContext, useContext } from "react";
+import React, { useState, useEffect, createContext, useContext,useRef } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
-import * as Yup from "yup";
 import { Constants } from "../../constants/credentials";
 import Cookies from "js-cookie";
 import { useFormik } from "formik";
@@ -39,13 +38,27 @@ export const AddUserProvider = ({ children }) => {
     aadhaarNumber: "",
     panNumber: "",
   });
+  const [editValues, setEditValues] = useState({
+    dropdown: 6,
+    mobileNumber: "",
+    name: "",
+    address1: "",
+    address2: "",
+    city: "",
+    state: "",
+    pincode: "",
+    upiAddress: "",
+    aadhaarNumber: "",
+    panNumber: "",
+  });
+
   // const toggleEdit = () => {
   //   setEditmode(!editmode);
   // };
 
   return (
     <AddUserContext.Provider
-      value={{ initialValues, setInitialValues, editmode, setEditmode }}
+      value={{ initialValues, setInitialValues, editmode, setEditmode, editValues, setEditValues }}
     >
       {children}
     </AddUserContext.Provider>
@@ -56,32 +69,31 @@ export const useAddUser = () => {
   return useContext(AddUserContext);
 };
 
-
 export default function AddUser() {
-  const CompanyId = sessionStorage.getItem('CompanyId');
+  const CompanyId = sessionStorage.getItem("CompanyId");
   const storedMobileNumber = sessionStorage.getItem("mobileNumber");
   const [registrationTypes, setRegistrationTypes] = useState([]); // types of registrations (distributor,dealer,mechanic)
   const [adminDetails, setAdminDetails] = useState([]); // admin details
   // const defaultOption = options[0]; //dropdown menu default option
-  const { initialValues, editmode,setEditmode,setInitialValues } = useAddUser();
+  const { initialValues, editmode, setEditmode, editValues } =
+    useAddUser();
   const navigate = useNavigate();
-  const parentRegistrationId = sessionStorage.getItem('parentRegistrationId')
+  const parentRegistrationId = sessionStorage.getItem("parentRegistrationId");
   var adminRegistrationId = 0;
+  const formikRef = useRef();
+  // (function () {
+  //   // alert("I am here");
+  //   setInitialValues
+  //   // setEditmode(false);
+  // })();
   
-
-
-// (function () {
-//   // alert("I am here");
-//   setInitialValues
-//   // setEditmode(false);
-// })();
 
   // useEffect(() => {
   //   getAdminDetails();
   // }, []);
 
-
   useEffect(() => {
+  // editmode &&  formikRef.current?.resetForm();
     getRegistrationTypes();
   }, []);
 
@@ -133,21 +145,38 @@ export default function AddUser() {
     // else if (values.lastName.length > 20) {
     //   errors.lastName = 'Must be 20 characters or less';
     // }
-
     if (!values.pincode) {
       errors.pincode = "Pincode is required";
     }
+    // if (!values.aadhaarNumber) {
+    //   errors.aadhaarNumber = "Aadhar number is required";
+    // }
+    //  if (!/^\d{12}$/.test(values.aadhaarNumber)) {
+    //   errors.aadhaarNumber = "Aadhar number must be 12 digits";
+    // }
+
+    // if (!values.upiAddress) {
+    //   errors.upiAddress = "UPI Address is required";
+    // } 
+    //  if (!/^[\w.-]+@[\w.-]+$/.test(values.upiAddress)) {
+    //   errors.upiAddress = "Invalid UPI Address";
+    // }
     return errors;
   };
 
   const formik = useFormik({
-    initialValues: initialValues,
+    initialValues: editmode ? editValues : initialValues,
     enableReinitialize: true,
     validate,
-    onSubmit: (values) => {
+    onSubmit: (values, { resetForm }) => {
       console.log(JSON.stringify(values));
-      console.log("values before submitting:",values);
-      console.log('admin id onsubmit:',adminRegistrationId,"user type:",values.dropdown);
+      console.log("values before submitting:", values);
+      console.log(
+        "admin id onsubmit:",
+        adminRegistrationId,
+        "user type:",
+        values.dropdown
+      );
       setEditmode(false);
       fetch(`http://183.83.219.144:81/LMS/Registration/SaveRegistration`, {
         method: "POST",
@@ -175,9 +204,9 @@ export default function AddUser() {
           walletValue: 0,
           expiredWalletValue: 0,
           paidValue: 0,
-          upiAddress: "", //input field
-          adhaarNumber: "", //input field
-          panNumber: "", //input field
+          upiAddress: values.upiAddress, //input field
+          adhaarNumber: values.aadhaarNumber, //input field
+          panNumber: values.panNumber, //input field
           isActive: true, //required
         }),
       })
@@ -186,7 +215,11 @@ export default function AddUser() {
           if (responseData) {
             alert("submitted successfully");
             // window.location.reload();
-            navigate("/userlist");
+            // navigate("/userlist");
+            resetForm();
+          }
+          else{
+            alert('failed to add user');
           }
           console.log("response from saveRegistration:", responseData);
         })
@@ -195,10 +228,16 @@ export default function AddUser() {
     // onReset: (values,{ resetForm }) => resetForm(),
   });
 
+  // useEffect(() => {
+  //   if (!editmode) {
+  //     formik.resetForm();
+  //   }
+  // }, [editmode, formik]);
+
   return (
     <div className="user-form-container">
       <div className="user-form">
-        <form onSubmit={formik.handleSubmit}>
+        <form onSubmit={formik.handleSubmit} innerRef={formikRef}>
           {/* <Dropdown
           className="user_dropdown"
           options={registrationTypes}
@@ -206,176 +245,184 @@ export default function AddUser() {
           value="-----"
           // placeholder="Select an option"
         /> */}
-        <div style={{display:'flex',flexDirection:'row',margin:10}}>
-        <div style={{flexDirection:"column",margin:10}}>
-          <label>Select type of user:</label>
-          {/* {editmode ? ( */}
-            {/* <input value={formik.values.dropdown} disabled /> */}
-          {/* ) : ( */}
-            <select
-              value={formik.values.dropdown}
-              name="dropdown"
-              onChange={formik.handleChange}
-              disabled={editmode}
-            >
-              {!registrationTypes.message &&
-                registrationTypes?.slice(1)?.map((type) => {
-                  return (
-                    <option
-                      key={type.registrationTypeExtId}
-                      value={type.registrationTypeExtId}
-                    >
-                      {type.registrationTypeName}
-                    </option>
-                  );
-                })}
-            </select>
-          {/* )} */}
-          <br />
-          <label> Mobile Number: </label>
-          {/* <br /> */}
-          <input
-            id="mobileNumber"
-            name="mobileNumber"
-            type="mobileNumber"
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            disabled={editmode}
-            value={formik.values.mobileNumber}
-          />
-          {formik.touched.mobileNumber && formik.errors.mobileNumber ? (
-            <p style={{ color: "red" }}>{formik.errors.mobileNumber}</p>
-          ) : null}
-          <br />
-          <label>Name: </label>
-          <input
-            id="name"
-            name="name"
-            type="name"
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            value={formik.values.name}
-            autoComplete="nope"
-          />
-          {formik.touched.name && formik.errors.name ? (
-            <p style={{ color: "red" }}>{formik.errors.name}</p>
-          ) : null}
-          <br />
-          <label>Address1: </label>
-          <input
-            id="address1"
-            name="address1"
-            type="address1"
-            onChange={formik.handleChange}
-            value={formik.values.address1}
-          />
-          <br />
-          <label>Address2: </label>
-          <input
-            id="address2"
-            name="address2"
-            type="address2"
-            onChange={formik.handleChange}
-            value={formik.values.address2}
-          />
-          <br />
-          <label>City: </label>
-          <input
-            id="city"
-            name="city"
-            type="city"
-            onChange={formik.handleChange}
-            value={formik.values.city}
-            />
-          <br />
+          <div style={{ display: "flex", flexDirection: "row", margin: 10 }}>
+            <div style={{ flexDirection: "column", margin: 10 }}>
+              <label>Select type of user:</label>
+              {/* {editmode ? ( */}
+              {/* <input value={formik.values.dropdown} disabled /> */}
+              {/* ) : ( */}
+              <select
+                value={formik.values.dropdown}
+                name="dropdown"
+                onChange={formik.handleChange}
+                disabled={editmode}
+              >
+                {!registrationTypes.message &&
+                  registrationTypes?.slice(1)?.map((type) => {
+                    return (
+                      <option
+                        key={type.registrationTypeExtId}
+                        value={type.registrationTypeExtId}
+                      >
+                        {type.registrationTypeName}
+                      </option>
+                    );
+                  })}
+              </select>
+              {/* )} */}
+              <br />
+              <label> Mobile Number: </label>
+              {/* <br /> */}
+              <input
+                id="mobileNumber"
+                name="mobileNumber"
+                type="mobileNumber"
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                disabled={editmode}
+                value={formik.values.mobileNumber}
+              />
+              {formik.touched.mobileNumber && formik.errors.mobileNumber ? (
+                <p style={{ color: "red" }}>{formik.errors.mobileNumber}</p>
+              ) : null}
+              <br />
+              <label>Name: </label>
+              <input
+                id="name"
+                name="name"
+                type="name"
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.name}
+                autoComplete="nope"
+              />
+              {formik.touched.name && formik.errors.name ? (
+                <p style={{ color: "red" }}>{formik.errors.name}</p>
+              ) : null}
+              <br />
+              <label>Address1: </label>
+              <input
+                id="address1"
+                name="address1"
+                type="address1"
+                onChange={formik.handleChange}
+                value={formik.values.address1}
+              />
+              {formik.touched.address1 && formik.errors.address1 ? (
+                <p style={{ color: "red" }}>{formik.errors.address1}</p>
+              ) : null}
+              <br />
+              <label>Address2: </label>
+              <input
+                id="address2"
+                name="address2"
+                type="address2"
+                onChange={formik.handleChange}
+                value={formik.values.address2}
+              />
+              <br />
+              <label>City: </label>
+              <input
+                id="city"
+                name="city"
+                type="city"
+                onChange={formik.handleChange}
+                value={formik.values.city}
+              />
+              <br />
             </div>
-          <div style={{flexDirection:"column",margin:10}}>
+            <div style={{ flexDirection: "column", margin: 10 }}>
+              <label>State: </label>
+              <input
+                id="state"
+                name="state"
+                type="state"
+                onChange={formik.handleChange}
+                value={formik.values.state}
+              />
+              <br />
+              <label>Pincode: </label>
+              <input
+                id="pincode"
+                name="pincode"
+                type="pincode"
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.pincode}
+              />
+              {formik.touched.pincode && formik.errors.pincode ? (
+                <p style={{ color: "red" }}>{formik.errors.pincode}</p>
+              ) : null}
+              <br />
+              <label>UPI Address: </label>
+              <input
+                id="upiAddress"
+                name="upiAddress"
+                type="upiAddress"
+                onChange={formik.handleChange}
+                value={formik.values.upiAddress}
+              />
 
-          <label>State: </label>
-          <input
-            id="state"
-            name="state"
-            type="state"
-            onChange={formik.handleChange}
-            value={formik.values.state}
-          />
-          <br />
-          <label>Pincode: </label>
-          <input
-            id="pincode"
-            name="pincode"
-            type="pincode"
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            value={formik.values.pincode}
-          />
-          {formik.touched.pincode && formik.errors.pincode ? (
-            <p style={{ color: "red" }}>{formik.errors.pincode}</p>
-          ) : null}
-          <br />
-          <label>UPI Address: </label>
-          <input
-            id="upiAddress"
-            name="upiAddress"
-            type="upiAddress"
-            onChange={formik.handleChange}
-            value={formik.values.upiAddress}
-          />
+              <br />
+              <label>Aadhaar Number: </label>
 
-          <br />
+              <input
+                id="aadhaarNumber"
+                name="aadhaarNumber"
+                type="aadhaarNumber"
+                onChange={formik.handleChange}
+                value={formik.values.aadhaarNumber}
+              />
+              {formik.touched.aadhaarNumber && formik.errors.aadhaarNumber ? (
+                <p style={{ color: "red" }}>{formik.errors.aadhaarNumber}</p>
+              ) : null}
+              <br />
+              <label>Pan Number:</label>
 
-          <label>Aadhaar Number: </label>
+              <input
+                id="panNumber"
+                name="panNumber"
+                type="panNumber"
+                onChange={formik.handleChange}
+                value={formik.values.panNumber}
+              />
+              <br />
+              <button
+                className="btn btn-warning"
+                style={{
+                  // alignSelf: "flex-end",
+                  position: "absolute",
+                  bottom: 0,
+                  // right: 40,
+                  margin: 20,
+                  border: 0,
+                }}
+                type="reset"
+                // onClick={() => window.location.reload()}
+                onClick={ () => {formik.resetForm();
+                setEditmode(false);
+                console.log('reset clicked')
+                }}
+              >
+                Reset
+              </button>
 
-          <input
-            id="aadhaarNumber"
-            name="aadhaarNumber"
-            type="aadhaarNumber"
-            onChange={formik.handleChange}
-            value={formik.values.aadhaarNumber}
-          />
-          <br />
-          <label>Pan Number: </label>
-
-          <input
-            id="panNumber"
-            name="panNumber"
-            type="panNumber"
-            onChange={formik.handleChange}
-            value={formik.values.panNumber}
-          />
-          <br />
-          <button
-            className="btn btn-warning"
-            style={{
-              // alignSelf: "flex-end",
-              position: "absolute",
-              bottom: 0,
-              // right: 40,
-              margin: 20,
-              border: 0,
-            }}
-            type="reset"
-            onClick={() => window.location.reload()}
-          >
-            Reset
-          </button>
-          
-          <button
-            className="btn btn-primary"
-            style={{
-              alignSelf: "flex-end",
-              position: "absolute",
-              bottom: 0,
-              right: 0,
-              margin: 20,
-              border: 0,
-            }}
-            type="submit"
-          >
-            Submit
-          </button>
+              <button
+                className="btn btn-primary"
+                style={{
+                  alignSelf: "flex-end",
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  margin: 20,
+                  border: 0,
+                }}
+                type="submit"
+              >
+                Submit
+              </button>
+            </div>
           </div>
-        </div>
         </form>
       </div>
     </div>

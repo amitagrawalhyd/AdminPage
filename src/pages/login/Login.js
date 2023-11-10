@@ -36,7 +36,6 @@ export default function Login() {
           sessionStorage.setItem("mobileNumber", mobileNumber);
           sessionStorage.setItem("CompanyId",JSON.parse(atob(responseData.token)).CompanyId)
           sessionStorage.setItem("parentRegistrationId",JSON.parse(atob(responseData.token)).RegistrationId)
-
           // navigate("/dashboard");  JSON.parse(decodedToken).CompanyId
           navigate("/dashboard", {
             state: { mobileNumber: mobileNumber, token: responseData.token },
