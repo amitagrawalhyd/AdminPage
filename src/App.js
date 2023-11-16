@@ -46,7 +46,6 @@ import PageNotFound from "./components/PageNotFound";
 import Cookies from 'js-cookie';
 import {useNavigate} from "react-router-dom";
 import NotifyUsers from "./components/NotifyUsers";
-import CompanyDetails from "./APIs/CompanyDetails";
 
 
 // const Home = () => {
@@ -87,27 +86,29 @@ const App = () => {
   // const { collapseSidebar } = useProSidebar();
   const token = sessionStorage.getItem('token');
   const navigate = useNavigate();
-// const companylogo=sessionStorage.getItem('companylogo')  
+const companylogo= location.pathname !== "/" && sessionStorage.getItem('logo');
+console.log('logo from appjs:',companylogo)  
 
 
   return (
     <div
       style={{
         display: "flex",
-        height: "100vh",
+        // height: "100vh",
       }}
     >
-      {location.pathname != "/" && token &&(
+      {location.pathname !== "/" && token &&(
         <Sidebar className="position-fixed">
           <Menu>
-            <MenuItem
+            {/* <MenuItem
               onClick={() => {
                 // collapseSidebar();
               }}
               className="menu1"
-            >
-            <CompanyDetails companyId={companyId} />
-            </MenuItem>
+            > */}
+            <img className="logo" src={`data:image/jpg;base64,${companylogo}`} />
+            {/* <img className="logo" src={'https://plus.unsplash.com/premium_photo-1669324357471-e33e71e3f3d8?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'} /> */}
+            {/* </MenuItem> */}
             <MenuItem
               component={<Link to="dashboard" className="link" />}
               icon={<GridViewRoundedIcon />}

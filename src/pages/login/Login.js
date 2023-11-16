@@ -11,9 +11,41 @@ export default function Login() {
   const [passcode, setPasscode] = useState("");
   const navigate = useNavigate();
   const { setToken } = useAppContext();
+  const [companydetails, setCompanyDetails] = useState({});
+  var isEmpty = require("lodash.isempty");
 
-  // function generateOtp() {
-  // }
+  const getCompanyLogo = async (companyId, token) => {
+    if (token) {
+      try {
+        const resp = await fetch(
+          `http://183.83.219.144:81/LMS/Company/Companies/${companyId}`,
+          {
+            method: 'GET',
+            headers: new Headers({
+              Authorization: `Bearer ${token}`,
+            }),
+          },
+        );
+        const data = await resp.json();
+        setCompanyDetails(data);
+  
+        console.log("company details:", data);
+  
+        let companylogo =
+          !isEmpty(data) && !data.message
+            ? data.map((company) => company.companyLogo)[companyId - 1]
+            : undefined;
+  
+        sessionStorage.setItem("companylogo", companylogo);
+        console.log("company logo: ", companylogo);
+  
+        return companylogo;
+      } catch (error) {
+        console.error("Error fetching company details:", error);
+      }
+    }
+  };
+  
 
   function handleSubmit(e) {
     // Prevent the browser from reloading the page
@@ -26,7 +58,7 @@ export default function Login() {
       }
     )
       .then((response) => response.json())
-      .then((responseData) => {
+      .then(async (responseData) => {
         console.log("login validation:", responseData.validationResult);
         if (responseData.validationResult) {
           // Cookies.set("token", responseData.token); 
@@ -36,7 +68,13 @@ export default function Login() {
           sessionStorage.setItem("mobileNumber", mobileNumber);
           sessionStorage.setItem("CompanyId",JSON.parse(atob(responseData.token)).CompanyId)
           sessionStorage.setItem("parentRegistrationId",JSON.parse(atob(responseData.token)).RegistrationId)
-          // navigate("/dashboard");  JSON.parse(decodedToken).CompanyId
+          // const logo = getCompanyLogo(JSON.parse(atob(responseData.token)).CompanyId);
+          // console.log('logo fetched after login:',logo);
+          const logo = await getCompanyLogo(
+            JSON.parse(atob(responseData.token)).CompanyId,
+            responseData.token
+          );
+          sessionStorage.setItem('logo', logo);          // navigate("/dashboard");  JSON.parse(decodedToken).CompanyId
           navigate("/dashboard", {
             state: { mobileNumber: mobileNumber, token: responseData.token },
           });
@@ -84,7 +122,7 @@ export default function Login() {
                 type="submit"
                 style={{
                   backgroundColor:
-                    passcode.length < 6 === true ? "grey" : "#16219d",
+                   ( passcode.length < 6) === true ? "grey" : "#16219d",
                   color: "white",
                   padding: 5,
                   borderRadius: 5,

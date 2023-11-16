@@ -260,7 +260,8 @@ export default function UserList() {
                     <>
                     <button
                       // className={user.isActive? "btn btn-secondary": "btn btn-light" } 
-                       style={{color:'white',
+                       style={{
+                       color:'white',
                        padding: 5,
                        borderRadius: 5,
                        backgroundColor:

@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Constants } from "../constants/credentials";
-import Cookies from "js-cookie";
 import { usePDF } from "react-to-pdf";
-import { useDownloadExcel } from "react-export-table-to-excel";
+// import { useDownloadExcel } from "react-export-table-to-excel";
 import DatePicker from "react-datepicker";
 import Dropdown from "react-dropdown";
 import "react-dropdown/style.css";
-import Autocomplete from "react-autocomplete";
-import { compareAsc } from "date-fns";
+// import Autocomplete from "react-autocomplete";
+// import { compareAsc } from "date-fns";
 import saveAs from 'file-saver';
 import { useAddUser } from "./User/AddUser";
 
@@ -20,7 +18,7 @@ const Transactions = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [transactions, setTransactions] = useState([]);
-  const [allTransactions, setAllTransactions] = useState([]);
+  // const [allTransactions, setAllTransactions] = useState([]);
   const {setEditmode} = useAddUser();
   setEditmode(false);
 
@@ -39,7 +37,7 @@ const Transactions = () => {
   const [selected, setSelected] = useState(options[0]); //default value of dropdown
   const { toPDF, targetRef } = usePDF({ filename: "transactions.pdf" }); //for pdf
   const tableRef = useRef(null); // for excel
-  var value = ""; // testing purpose
+  // var value = ""; // testing purpose
   const [selectedItems, setSelectedItems] = useState([]);
 
   const handleCheckboxChange = (transaction) => {
@@ -97,29 +95,29 @@ const Transactions = () => {
   };
   // console.log("transactions:", transactions);
 
-  const getAllTransactions = async () => {
-    //for total transactions list
-    const resp = await fetch(
-      `http://183.83.219.144:81/LMS/Coupon/GetTransactions/${CompanyId}`,
-      {
-        method: "GET",
-        headers: new Headers({
-          Authorization: `Bearer ${token}`,
-        }),
-      }
-    );
-    // console.log('response: ', resp.json());
-    //setData(resp.json());
-    //console.log('data length: ', data.length);
-    const respJson = await resp.json();
-    setAllTransactions(respJson);
-    // setLoading(false);
-  };
+  // const getAllTransactions = async () => {
+  //   //for total transactions list
+  //   const resp = await fetch(
+  //     `http://183.83.219.144:81/LMS/Coupon/GetTransactions/${CompanyId}`,
+  //     {
+  //       method: "GET",
+  //       headers: new Headers({
+  //         Authorization: `Bearer ${token}`,
+  //       }),
+  //     }
+  //   ).catch((error)=>console.log(error))
+  //   // console.log('response: ', resp.json());
+  //   //setData(resp.json());
+  //   //console.log('data length: ', data.length);
+  //   const respJson = await resp.json();
+  //   setAllTransactions(respJson);
+  //   // setLoading(false);
+  // };
   // console.log("all transactions:", allTransactions);
 
   useEffect(() => {
     getTransactions();
-    getAllTransactions();
+    // getAllTransactions();
   }, []);
 
   // transactions.sort((a,b) => b.transactionDate.localeCompare(a.transactionDate));
@@ -136,11 +134,11 @@ const Transactions = () => {
   // const uniqNumbers = [...new Set(allMobileNumbers)];
 
   // console.log("mobilenumber list:", uniqNumbers); // list of unique mobile numbers
-  const { onDownload } = useDownloadExcel({
-    currentTableRef: tableRef.current,
-    filename: "List of Transactions",
-    sheet: "Transactions",
-  });
+  // const { onDownload } = useDownloadExcel({
+  //   currentTableRef: tableRef.current,
+  //   filename: "List of Transactions",
+  //   sheet: "Transactions",
+  // });
 
   function handleSelect(e) {
     // on select dropdown
@@ -165,6 +163,9 @@ const Transactions = () => {
       })
     );
     console.log("complete api response:",completeTransations);
+    // window.location.reload();
+    getTransactions();
+    setSelectedItems([]);
   }
 
   const filteredTransactions =
@@ -172,21 +173,21 @@ const Transactions = () => {
     transactions?.filter(filterTransactions);
 
   function filterTransactions(transaction) {
-    if (transaction.isPaid && transaction.isActive && selected == "Completed") {
+    if (transaction.isPaid && transaction.isActive && selected === "Completed") {
       return transaction;
     } else if (
       !transaction.isPaid &&
       transaction.isActive &&
-      selected == "Pending"
+      selected === "Pending"
     ) {
       return transaction;
     } else if (
       !transaction.isPaid &&
       !transaction.isActive &&
-      selected == "Rejected"
+      selected === "Rejected"
     ) {
       return transaction;
-    } else if (selected == "All") {
+    } else if (selected === "All") {
       return transaction;
     }
   }
@@ -251,15 +252,15 @@ const Transactions = () => {
           mobileNumber:transaction.registerMobileNumber,
           payoutStatus: transaction.payoutStatus,
           transactionId:transaction.payoutTransactionId,
-          status:transaction.isPaid &&
+          status:(transaction.isPaid &&
             transaction.isActive &&
-            "Completed" ||
-          !transaction.isPaid &&
+            "Completed") ||
+        (!transaction.isPaid &&
             transaction.isActive &&
-            "Pending" ||
-          !transaction.isPaid &&
+            "Pending") ||
+          (!transaction.isPaid &&
             !transaction.isActive &&
-            "Rejected",
+            "Rejected"),
             date:formatDate(transaction.transactionDate.split("T")[0])
         });
       // return(registrations);
@@ -283,8 +284,17 @@ const Transactions = () => {
 
   return (
     <div>
-      <h4 className="header mb-2">Transactions requested</h4>
-      <button className="btn btn-primary" onClick={handleRequeue}
+      <h4 className="header mb-2">List of Transactions</h4>
+      <button  onClick={handleRequeue}
+      style={{
+        color:'white',
+        padding: 5,
+        borderRadius: 5,
+        backgroundColor:
+        (selectedItems.length===0) ? "grey" : "blue",
+        border:0,
+        cursor : (selectedItems.length===0) ? "not-allowed" :"pointer"
+      }}
       disabled={selectedItems.length===0}
       >Requeue</button> 
       <div className="d-flex align-items-center justify-content-between form_transaction">
@@ -317,14 +327,14 @@ const Transactions = () => {
         <DatePicker
           className="form-control"
           selected={startDate}
-          dateFormat="yyyy/MM/dd"
+          dateFormat="dd/MM/yyyy"
           onChange={(date) => setStartDate(date)}
         />
         <label className="mb-0">End Date:</label>
         <DatePicker
           className="form-control"
           selected={endDate}
-          dateFormat="yyyy/MM/dd"
+          dateFormat="dd/MM/yyyy"
           onChange={(date) => setEndDate(date)}
         />
         <Dropdown
@@ -395,7 +405,9 @@ const Transactions = () => {
                   ))}
                 </tr>
               ) : (
-                "No records found"
+                <div className="d-flex align-items-center justify-content-center" style={{height:'69vh'}}>
+                <p>No records found</p>
+                </div>
               )}
             </thead>
             {filterTransactions.length !== 0 && (

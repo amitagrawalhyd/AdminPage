@@ -128,7 +128,7 @@ const Dashboard = () => {
   return (
     <>
       {loading ? (
-        <Loader color="#16219d" type="spinner-circle" />
+        <Loader bgColor={"#16210d"} type="spinner-cub" />
       ) : (
         <div>
           <div className="dashboard-form">
@@ -136,14 +136,14 @@ const Dashboard = () => {
             <DatePicker
             className="form-control"
               selected={startDate}
-              dateFormat="yyyy/MM/dd"
+              dateFormat="dd/MM/yyyy"
               onChange={(date) => setStartDate(date)}
             />
             <label className="mb-0 mr-2 ml-2">End Date:</label>
             <DatePicker
               className="form-control"
               selected={endDate}
-              dateFormat="yyyy/MM/dd"
+              dateFormat="dd/MM/yyyy"
               onChange={(date) => setEndDate(date)}
             />
             <button
@@ -189,7 +189,7 @@ const Dashboard = () => {
                                 <tr>
                                   <td style={{textAlign:'center'}}> {coupon?.faceValue}</td>
                                   <td style={{textAlign:'center'}}> {coupon?.scannedCount}</td>
-                                  <td style={{textAlign:'center'}}>
+                                  <td style={{textAlign:'right',paddingRight:'10px'}}>
                                     {coupon?.faceValue * coupon?.scannedCount}
                                   </td>
                                 </tr>
@@ -197,8 +197,7 @@ const Dashboard = () => {
                                 <tr>
                                 <td style={{textAlign:'center'}}> 0</td>
                                 <td style={{textAlign:'center'}}> 0</td>
-                                <td style={{textAlign:'center'}}>
-                                  0
+                                <td style={{textAlign:'right',paddingRight:'10px'}}>                                  0
                                 </td>
                               </tr>
                               )}
@@ -237,8 +236,7 @@ const Dashboard = () => {
                               <tr>
                                 <td style={{textAlign:'center'}}> {coupon?.faceValue}</td>
                                 <td style={{textAlign:'center'}}> {coupon?.expiredCount}</td>
-                                <td style={{textAlign:'center'}}>
-                                  {coupon?.faceValue * coupon?.expiredCount}
+                                <td style={{textAlign:'right',paddingRight:'10px'}}>                                  {coupon?.faceValue * coupon?.expiredCount}
                                 </td>
                               </tr>
                             )) :
@@ -246,8 +244,7 @@ const Dashboard = () => {
                               <tr>
                               <td style={{textAlign:'center'}}> 0</td>
                               <td style={{textAlign:'center'}}> 0</td>
-                              <td style={{textAlign:'center'}}>
-                                0
+                              <td style={{textAlign:'right',paddingRight:'10px'}}>                                0
                               </td>
                             </tr>
                             )}

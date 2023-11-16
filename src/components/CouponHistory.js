@@ -11,7 +11,6 @@ import { useAddUser } from "./User/AddUser";
 
 const CouponHistory = () => {
   const CompanyId = sessionStorage.getItem('CompanyId');
-  const token = Constants.token;
   const [couponData, setCouponData] = useState([]);
   let heading = [
     "Coupon Id",
@@ -61,21 +60,34 @@ const CouponHistory = () => {
   }, []);
 
   const getCouponHistory = async () => {
+    console.log('getCouponHistory is called');
+    // if (!getDataCalled) {
+    // getDataCalled = true;
+    const token = sessionStorage.getItem('token');
+
+    if ( token) {
+      const resp = await fetch(
+        `http://183.83.219.144:81/LMS/Coupon/GetCouponTransactions/${CompanyId}?mobileNumber=${mobileNumber}&startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
+        {
+          method: "GET",
+          headers: new Headers({
+            Authorization: `Bearer ${token}`,
+          }),
+        }
+      );
+      //setData(resp.json());
+      //console.log('data length: ', data.length);
+      const respJson = await resp.json();
+      console.log("response: ", respJson);
+      setCouponData(respJson);
+      // setLoading(false);
+    }
+    // }
+  };
+
+  const getCouponHisory = async () => {
     // console.log('loading data:', storedMobileNumber, storedToken);
-    const resp = await fetch(
-      `http://183.83.219.144:81/LMS/Coupon/GetCouponTransactions/${CompanyId}?mobileNumber=${mobileNumber}&startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
-      {
-        method: "GET",
-        headers: new Headers({
-          Authorization: `Bearer ${token}`,
-        }),
-      }
-    );
-    //setData(resp.json());
-    //console.log('data length: ', data.length);
-    const respJson = await resp.json();
-    console.log("response: ", respJson);
-    setCouponData(respJson);
+
     // setLoading(false);
   };
 
@@ -101,14 +113,14 @@ const CouponHistory = () => {
           <DatePicker
             className="form-control"
             selected={startDate}
-            dateFormat="yyyy/MM/dd"
+            dateFormat="dd/MM/yyyy"
             onChange={(date) => setStartDate(date)}
           />
           <label className="mb-0 mr-2 ml-2">End Date:</label>
           <DatePicker
             className="form-control"
             selected={endDate}
-            dateFormat="yyyy/MM/dd"
+            dateFormat="dd/MM/yyyy"
             onChange={(date) => setEndDate(date)}
           />
           <button
@@ -167,7 +179,9 @@ const CouponHistory = () => {
             </div>
           </div>
         ) : (
-          "No records found"
+          <div className="d-flex align-items-center justify-content-center" style={{height:'69vh'}}>
+          <p>No records found</p>
+          </div>
         )}
       </div>
     </>

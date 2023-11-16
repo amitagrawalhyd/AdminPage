@@ -27,7 +27,7 @@ const ManualEntry = () => {
         if (responseData === true) {
           alert("Coupon Code posted successfully");
         } else if (responseData === false) {
-          alert("Coupon Code Used already!");
+          alert("Coupon code already used or invalid");
         } else {
           alert("Invalid Coupon Code:(");
         }
