@@ -1,56 +1,27 @@
-import { useState,useEffect } from "react";
-import AttachFileIcon from '@mui/icons-material/AttachFile';
-import Cookies from 'js-cookie';
-import '../App.css';
-import {getToken} from './User/UserList';
+import { useState, useEffect } from "react";
+import AttachFileIcon from "@mui/icons-material/AttachFile";
+import Cookies from "js-cookie";
+import "../App.css";
+import { getToken } from "./User/UserList";
 import * as Yup from "yup";
-import Dropdown from "react-dropdown";
-import "react-dropdown/style.css";
-
+import Loader from "react-js-loader";
 
 const NotifyUsers = () => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const token = sessionStorage.getItem('token');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const token = sessionStorage.getItem("token");
   const [file, setFile] = useState("");
   var startDate = new Date();
   var endDate = new Date();
-  const [img,setImg] = useState('');
+  const [img, setImg] = useState("");
   const reader = new FileReader();
-  const CompanyId = sessionStorage.getItem('CompanyId');
+  const CompanyId = sessionStorage.getItem("CompanyId");
   const [registrations, setRegistrations] = useState([]); // users
-  let heading = ["Select","Mobile Number", "Name"];
-  const [selectedItems, setSelectedItems] = useState([]);// for checkbox
-  const options = ["All", "Company", "Distributer", "Dealer", "Mechanic"]; //for dropdown
-  const defaultOption = options[0]; //dropdown menu default option
-  const [selected, setSelected] = useState(options[0]); //default value of dropdown
-var responseArray = [];
+  let heading = ["Select", "Mobile Number", "Name"];
+  const [selectedItems, setSelectedItems] = useState([]); // for checkbox
+  const [loading, setLoading] = useState(false);
 
-function handleSelect(e) {
-  // on select dropdown
-  setSelected(e.value);
-  // getTransactions();
-}
-
-function filterUsers(user) {
-  if (user.registrationType === "Company" && selected === "Company") {
-    return user;
-  } else if (
-    user.registrationType === "Distributer" &&
-    selected === "Distributer"
-  ) {
-    return user;
-  } else if (user.registrationType === "Dealer" && selected === "Dealer") {
-    return user;
-  } else if (user.registrationType === "Mechanic" && selected === "Mechanic") {
-    return user;
-  } else if (selected === "All") {
-    return user;
-  }
-}
-
-const filteredUsers =
-  !registrations.message && registrations?.filter(filterUsers);
+  var responseArray = [];
 
   const handleCheckboxChange = (user) => {
     if (selectedItems.includes(user)) {
@@ -65,6 +36,7 @@ const filteredUsers =
   }, []);
 
   const getUsers = async () => {
+    setLoading(true);
     try {
       const response = await fetch(
         `http://183.83.219.144:81/LMS/Registration/GetRegistrations/${CompanyId}`,
@@ -82,156 +54,174 @@ const filteredUsers =
       // if(data.message){getUsers()}
       setRegistrations(data);
       // console.log('users from notify users:',data);
+      setLoading(false);
     } catch (error) {
       console.error("Error from get users api:", error);
       // alert("hello");
     }
   };
 
-    file && reader.readAsDataURL(file)
-    reader.onload = () => {
-      // console.log('called: ', reader)
-      setImg(reader.result)
-    }
+  file && reader.readAsDataURL(file);
+  reader.onload = () => {
+    // console.log('called: ', reader)
+    setImg(reader.result);
+  };
 
   // console.log('base64 image:',img.split(",").pop());
   // console.log("title and description from notify users:",title,description)
 
-  // const handleComplete= async () => {
-  //   const completeTransations = await Promise.all(
-  //     selectedItems.map(async (transaction) => {
-  //       const response = await fetch(`http://183.83.219.144:81/LMS/Coupon/CreatePayout/${CompanyId}/${transaction.id}/${transaction.upiAddress}/${transaction.payoutFundAccountId}/${transaction.transactionAmount*100}`,
-  //       {
-  //       method:'POST',
-  //       headers: new Headers({
-  //         Authorization: `Bearer ${token}`,
-  //       }),
-  //       }
-  //       )
-  //       return await response.json();
-  //     })
-  //   );
-  //   console.log("complete api response:",completeTransations);
-  // }
   const handleNotify = async () => {
-           responseArray = await Promise.all(
-            selectedItems.map(async (user) => {
-              const response = await fetch(`http://183.83.219.144:81/LMS/Notification/PushNotificationToUser/${title}/${description}/${user.registrationId}`,
-              {
-                method:'GET',
-                headers: new Headers({
-                  Authorization: `Bearer ${token}`,
-                }),
-              }
-              )
-              return await response.json();
-            })
-            );
-            console.log('responseArray:', responseArray);
-        // Check if any element in responseArray is false
-  const notificationFailed = responseArray.some((response) => !response);
-  console.log('notification status:',notificationFailed)
+    setLoading(true);
+    responseArray = await Promise.all(
+      selectedItems.map(async (user) => {
+        const response = await fetch(
+          `http://183.83.219.144:81/LMS/Notification/SaveNotification`,
+          {
+            method: "POST",
+            headers: new Headers({
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            }),
+            body: JSON.stringify({
+              companyId: 2,
+              title: title,
+              description: description,
+              imageURL: img.split(",").pop(),
+              startDateTime: startDate.toISOString(),
+              endDateTime: endDate.toISOString(),
+              isActive: true,
+              mobileNumber: user.registerMobileNumber,
+            }),
+          }
+        );
+        console.log("response from notify users:", response);
+        return await response.json();
+      })
+    );
+    console.log("responseArray:", responseArray);
+    // Check if any element in responseArray is false
+    const notificationFailed = responseArray.some((response) => !response);
+    console.log("notification status:", notificationFailed);
 
-  if (notificationFailed) {
-    alert('Failed to send some notifications.');
+    if (notificationFailed) {
+      alert("Failed to send some notifications.");
+      setTitle("");
+    } else {
+      alert("Notifications sent successfully.");
+    }
+    // document.getElementById("notification-form").reset();
+    // window.location.reload()
     setTitle("");
-  } else {
-    alert('Notifications sent successfully.');
-};
-            // document.getElementById("notification-form").reset();
-            // window.location.reload()
-            setTitle("");
-            setDescription("");
-            setFile("");
-            setSelectedItems([])
-  }
+    setDescription("");
+    setFile("");
+    setSelectedItems([]);
+    setLoading(false);
+  };
 
   return (
-    <div style={{display:'flex',flexDirection:'row',width:'100%'}}>
-      <div style={{width:'40%'}}>
-      <Dropdown
-          className="user_dropdown"
-          options={options}
-          onChange={handleSelect}
-          value={defaultOption}
-          // placeholder="Select an option"
-        />
-            <table className="table table-striped">
-          <thead style={{ justifyContent: "center" }}>
-            <tr>
-              {heading.map((head, headID) => (
-                <th key={headID}>{head}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {!registrations.message &&
-              filteredUsers?.map((user) => (
-                <tr>
-              <td>
-                <input
-                type="checkbox"
-                checked={selectedItems.includes(user)}
-                onChange={() => handleCheckboxChange(user)}
-              /> 
-              </td>
-                  <td className="user">{user.registerMobileNumber}</td>
-                  <td className="user"> {user.registerName}</td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-        </div>
-      <div className="notification-container">
-      <form className="notification-form">
-      <h4>Send Notifications</h4>
-        <input
-          className="notification-title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Title"
-        />
-        <textarea
-          value={description}
-          className="notification-description"
-          placeholder="Description"
-          onChange={(e) => setDescription(e.target.value)}
-        />
-        
-        <img
-        style={{width:'50%',height:'30%'}}
-          src={file && URL.createObjectURL(file)}
-          // : "https://default-image.jpg"
-          alt=""
-        />
-        <label style={{position:'absolute',bottom:0,margin:20,cursor:"pointer"}}>
-        <AttachFileIcon/> Upload Image
-        <input
-          type="file"
-          id="file"
-          onChange={(e) => setFile(e.target.files[0])}
-           accept= 'image/*'
-           style={{display:'none'}}
-        />
-        </label>
-        <button
-          onClick={handleNotify}
+    <>
+      {loading ? (
+        <div
           style={{
-            alignSelf: "flex-end",
-            position: "absolute",
-            bottom: 0,
-            margin: 20,
-            border: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "85vh",
           }}
-          className="btn btn-primary"
-          disabled={!title || !description || selectedItems.length===0}
-          type="button"
         >
-          Notify
-        </button>
-      </form>
-      </div>
-    </div>
+          <Loader bgColor={"#16210d"} type="spinner-cub" />
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "row", width: "100%" }}>
+          <div style={{ width: "40%" }}>
+            <table className="table table-striped">
+              <thead style={{ justifyContent: "center" }}>
+                <tr>
+                  {heading.map((head, headID) => (
+                    <th key={headID}>{head}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {!registrations.message &&
+                  registrations?.map((user) => (
+                    <tr>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.includes(user)}
+                          onChange={() => handleCheckboxChange(user)}
+                        />
+                      </td>
+                      <td className="user">{user.registerMobileNumber}</td>
+                      <td className="user"> {user.registerName}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="notification-container">
+            <form className="notification-form">
+              <h4 className="font-weight-bold">Send Notifications</h4>
+              <input
+                className="notification-title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Title"
+              />
+              <textarea
+                value={description}
+                className="notification-description"
+                placeholder="Description"
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            <img
+              style={{ width: file ? "50%": "25%", height:file ? "50%" : '25%', margin: "10px 0px" }}
+              src={file ? URL.createObjectURL(file) : "https://as2.ftcdn.net/v2/jpg/03/56/66/85/1000_F_356668511_RjvZ4P3UjEa85gal199KXdvHQGDCEn0V.jpg"}
+              alt="preview image"
+            />
+              <label
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  margin: 20,
+                  cursor: "pointer",
+                }}
+              >
+                <AttachFileIcon /> Upload Image
+                <input
+                  type="file"
+                  id="file"
+                  onChange={(e) => setFile(e.target.files[0])}
+                  accept="image/*"
+                  style={{ display: "none" }}
+                />
+              </label>
+              <button
+              onClick={handleNotify}
+              style={{
+                color: "white",
+                padding: 5,
+                borderRadius: 5,
+                backgroundColor: (!title || !description) ? "grey" : "blue",
+                border: 0,
+                cursor: (!title || !description) ? "not-allowed" : "pointer",
+                bottom: 15,
+                border: 0,
+                right: 15,
+                position: "absolute",
+
+              }}
+              disabled={!title || !description}
+              type="button"
+            >
+              Notify
+            </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Constants } from "../constants/credentials";
 import Cookies from "js-cookie";
 import { useAddUser } from "./User/AddUser";
+import Loader from 'react-js-loader';
 
 const ManualEntry = () => {
   const [couponCode, setCouponCode] = useState("");
@@ -9,8 +10,10 @@ const ManualEntry = () => {
   const CompanyId = sessionStorage.getItem('CompanyId');
   const token = sessionStorage.getItem('token');
   const {setEditmode} = useAddUser();
+  const [loading, setLoading] = useState(false);
   setEditmode(false);
   function handleSubmit(event) {
+    setLoading(true);
     event.preventDefault();
     fetch(
       `http://183.83.219.144:81/LMS/Coupon/ConsumeManualCoupon/${CompanyId}/${couponCode}/${mobileNumber}`,
@@ -31,6 +34,7 @@ const ManualEntry = () => {
         } else {
           alert("Invalid Coupon Code:(");
         }
+        setLoading(false);
       })
       .catch((error) => console.log(error));
   }
@@ -38,8 +42,8 @@ const ManualEntry = () => {
   return (
     <div className="manual-entry-container">
       <div className="manual-entry-form">
-        <h4 className="header mb-2 text-center">Manual Entry</h4>
-        <p className="mb-2">Enter the coupon code manually</p>
+        <h4 className="header mb-2 text-center font-weight-bold">Manual Entry</h4>
+        {/* <p className="mb-2">Enter the coupon code manually</p> */}
         <form onSubmit={handleSubmit} className="form_transaction ">
           <div >
             <label className="mb-0">Mobile Number</label>

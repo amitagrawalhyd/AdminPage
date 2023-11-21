@@ -26,7 +26,7 @@ const Dashboard = () => {
   const [dashboardDetails, setDashboardDetails] = useState({});
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
-  const {setEditmode} = useAddUser();
+  const { setEditmode } = useAddUser();
   setEditmode(false);
 
   function formatStartDate(separator = "-") {
@@ -48,29 +48,14 @@ const Dashboard = () => {
   }
   const formattedEndDate = endDate && formatEndDate();
 
-  // const {state} = useLocation();
-  // const { mobileNumber, token } = state; // Read values passed on state
-
-  // console.log("state params:",mobileNumber,token);
-
-  // const [selected, setSelected] = React.useState();
-
-  // console.log('mobile number from dashboard:', mobileNumber)
-  // Cookies.set("token",);
-  // console.log('picked date is:',date.toLocaleDateString("fr-CA"));
-  // setStartDate(date.toLocaleDateString("fr-CA"));
 
   const decodedToken = atob(token);
-  // console.log("decoded token", JSON.parse(atob(token)).RegistrationId);
 
-  const handleSubmit = () => {
-    // console.log("current date", currentDate);
-    // e.preventDefault();
-    // console.log('start date from handler:',startDate);
-  };
+
+
 
   const getDashboardDetails = async () => {
-    console.log('dashboad details called')
+    console.log("dashboad details called");
     setLoading(true);
     const resp = await fetch(
       `http://183.83.219.144:81/LMS/Coupon/CouponSummary/${CompanyId}/${mobileNumber}?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
@@ -80,61 +65,31 @@ const Dashboard = () => {
           Authorization: `Bearer ${getToken()}`,
         }),
       }
-    )
-    .catch((error) => console.log(error));
+    ).catch((error) => console.log(error));
     const respJson = await resp.json();
     setDashboardDetails(respJson);
     setLoading(false);
   };
-  // console.log("dashboard details:", dashboardDetails,token);
-  // console.log('dashboardDetails.scannedCoupons?.length: ',dashboardDetails.scannedCoupons?.length)
 
-  // Object.keys(dashboardDetails).forEach(function(key, index) {
-  // dashboardDetails.[key]
-  // console.log("dash",dashboardDetails?.[key]);
-  // });
-  const [companydetails, setCompanyDetails] = useState({});
   useEffect(() => {
     // getCompanyDetails();
     getDashboardDetails();
   }, []);
 
-  // const getCompanyDetails = async () => {
-  //   console.log('company details called')
-  //   // console.log('loading data:', storedMobileNumber, storedToken);
-  //   const resp = await fetch(
-  //     `http://183.83.219.144:81/LMS/Company/Companies/${CompanyId}`,
-  //     {
-  //       method: "GET",
-  //       headers: new Headers({
-  //         Authorization: `Bearer ${getToken()}`,
-  //       }),
-  //     }
-  //   ).catch(error => console.log('error fetching dashboard details:',error))
-  //   //setData(resp.json());
-  //   const respJson = await resp.json();
-  //   // console.log("response from company details: ", respJson);
-  //   setCompanyDetails(respJson);
-  //   // setLoading(false);
-  // };
-  // console.log("company details:", companydetails);
-    // let companylogo =
-    // !isEmpty(companydetails) &&
-    // !companydetails.message &&
-    // companydetails?.map((company) => company.companyLogo)[CompanyId - 1];
-    // sessionStorage.setItem("companylogo", companylogo);
-  // console.log('company logo: ' ,companylogo);
 
   return (
     <>
       {loading ? (
-        <Loader bgColor={"#16210d"} type="spinner-cub" />
+        <div style={{display:"flex",alignItems:'center',justifyContent:'center',height:'85vh'}}>
+        <Loader bgColor={"#16210d"} type="spinner-cub"/>
+        </div>
       ) : (
         <div>
+          <h4 className="font-weight-bold mb-4">Dashboard</h4>
           <div className="dashboard-form">
             <label className="mb-0 mr-2">Start Date:</label>
             <DatePicker
-            className="form-control"
+              className="form-control"
               selected={startDate}
               dateFormat="dd/MM/yyyy"
               onChange={(date) => setStartDate(date)}
@@ -156,7 +111,6 @@ const Dashboard = () => {
           </div>
 
           <div className="dashboard-details">
-            {/* {dashboardDetails?.scannedCoupon} */}
             <div>
               <div className="d-flex justify-content-around mt-5">
                 {!isEmpty(dashboardDetails) &&
@@ -164,43 +118,62 @@ const Dashboard = () => {
                     <div className="scanned-container box">
                       <>
                         <div
-                            style={{
-                              color: "#555",
-                              marginBottom: 5,
-                              borderBottom: "1px solid #ddd",
-                              display:'flex',
-                              justifyContent:'center'
-                            }}
-                                >
-                          <th>SCANNED COUPONS</th>
+                          style={{
+                            color: "#555",
+                            marginBottom: 5,
+                            borderBottom: "1px solid #ddd",
+                            display: "flex",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <p style={{padding: '8px 0px',fontWeight:500,}}>SCANNED COUPONS</p>
                         </div>
 
-                        <table >
+                        <table>
                           <>
-                            <th style={{padding:'0 10px'}}>Face Value</th>
-                            <th style={{padding:'0 10px'}}>Count</th>
-                            <th style={{padding:'0 10px'}}>Amount</th>
+                            <th style={{ padding: "0 10px" }}>Face Value</th>
+                            <th style={{ padding: "0 10px" }}>Count</th>
+                            <th style={{ padding: "0 10px" }}>Amount</th>
                           </>
                           <tbody>
                             {typeof dashboardDetails.scannedCoupons !==
                               "undefined" &&
-                              dashboardDetails.scannedCoupons.length > 0 ?
+                            dashboardDetails.scannedCoupons.length > 0 ? (
                               dashboardDetails?.scannedCoupons.map((coupon) => (
                                 <tr>
-                                  <td style={{textAlign:'center'}}> {coupon?.faceValue}</td>
-                                  <td style={{textAlign:'center'}}> {coupon?.scannedCount}</td>
-                                  <td style={{textAlign:'right',paddingRight:'10px'}}>
+                                  <td style={{ textAlign: "center" }}>
+                                    {" "}
+                                    {coupon?.faceValue}
+                                  </td>
+                                  <td style={{ textAlign: "center" }}>
+                                    {" "}
+                                    {coupon?.scannedCount}
+                                  </td>
+                                  <td
+                                    style={{
+                                      textAlign: "right",
+                                      paddingRight: "10px",
+                                    }}
+                                  >
                                     {coupon?.faceValue * coupon?.scannedCount}
                                   </td>
                                 </tr>
-                              )): (
-                                <tr>
-                                <td style={{textAlign:'center'}}> 0</td>
-                                <td style={{textAlign:'center'}}> 0</td>
-                                <td style={{textAlign:'right',paddingRight:'10px'}}>                                  0
+                              ))
+                            ) : (
+                              <tr>
+                                <td style={{ textAlign: "center" }}> 0</td>
+                                <td style={{ textAlign: "center" }}> 0</td>
+                                <td
+                                  style={{
+                                    textAlign: "right",
+                                    paddingRight: "10px",
+                                  }}
+                                >
+                                  {" "}
+                                  0
                                 </td>
                               </tr>
-                              )}
+                            )}
                           </tbody>
                         </table>
                       </>
@@ -209,69 +182,85 @@ const Dashboard = () => {
                 {!isEmpty(dashboardDetails) &&
                   typeof dashboardDetails.expiredCoupons !== "undefined" && (
                     <div className="expired-container box">
-                      <th
-                        style={{
-                          color: "#555",
-                          marginBottom: 5,
-                          borderBottom: "1px solid #ddd",
-                          display:'flex',
-                          justifyContent:'center'
-                        }}
-                      >
-                        EXPIRED COUPONS
-                      </th>
+                          <p style={{padding: '8px 0px',fontWeight:500, textAlign:'center',borderBottom:'1px solid #ddd'}}>EXPIRED COUPONS</p>
+
                       <table>
                         {/* {dashboardDetails.expiredCoupons.length !== 0 && ( */}
                         <>
-                          <th style={{padding:'0 10px'}}>Face Value</th>
-                          <th style={{padding:'0 10px'}}>Count</th>
-                          <th style={{padding:'0 10px'}}>Amount</th>
+                          <th style={{ padding: "0 10px" }}>Face Value</th>
+                          <th style={{ padding: "0 10px" }}>Count</th>
+                          <th style={{ padding: "0 10px" }}>Amount</th>
                         </>
                         {/* )} */}
                         <tbody>
                           {typeof dashboardDetails.expiredCoupons !==
                             "undefined" &&
-                            dashboardDetails.expiredCoupons.length > 0 ?
+                          dashboardDetails.expiredCoupons.length > 0 ? (
                             dashboardDetails?.expiredCoupons.map((coupon) => (
                               <tr>
-                                <td style={{textAlign:'center'}}> {coupon?.faceValue}</td>
-                                <td style={{textAlign:'center'}}> {coupon?.expiredCount}</td>
-                                <td style={{textAlign:'right',paddingRight:'10px'}}>                                  {coupon?.faceValue * coupon?.expiredCount}
+                                <td style={{ textAlign: "center" }}>
+                                  {" "}
+                                  {coupon?.faceValue}
+                                </td>
+                                <td style={{ textAlign: "center" }}>
+                                  {" "}
+                                  {coupon?.expiredCount}
+                                </td>
+                                <td
+                                  style={{
+                                    textAlign: "right",
+                                    paddingRight: "10px",
+                                  }}
+                                >
+                                  {" "}
+                                  {coupon?.faceValue * coupon?.expiredCount}
                                 </td>
                               </tr>
-                            )) :
-                            (
-                              <tr>
-                              <td style={{textAlign:'center'}}> 0</td>
-                              <td style={{textAlign:'center'}}> 0</td>
-                              <td style={{textAlign:'right',paddingRight:'10px'}}>                                0
+                            ))
+                          ) : (
+                            <tr>
+                              <td style={{ textAlign: "center" }}> 0</td>
+                              <td style={{ textAlign: "center" }}> 0</td>
+                              <td
+                                style={{
+                                  textAlign: "right",
+                                  paddingRight: "10px",
+                                }}
+                              >
+                                {" "}
+                                0
                               </td>
                             </tr>
-                            )}
+                          )}
                         </tbody>
                       </table>
                     </div>
                   )}
-                <div >
-                  {typeof dashboardDetails.transaction !==
-                            "undefined" && (
-                              <div className="box">
-                      <table style={{border:'1px solid #ddd'}}>
-                        {/* {dashboardDetails.expiredCoupons.length !== 0 && ( */}
-                        <>
-                       
-                          <th style={{borderBottom:'1px solid #ddd'}}>TRANSFERRED AMOUNT</th>
-                        </>
-                        <tbody>
-                          <tr>
-                            <td style={{fontSize:40,textAlign:'center'}}>
-                             {dashboardDetails?.transaction?.transactionAmount}
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                      </div>
-                    )}
+                <div>
+                  {typeof dashboardDetails.transaction !== "undefined" && (
+                    // <div className="created_box">
+                    //   <table >
+                    //     <>
+                    //       <th>
+                    //         TRANSFERRED AMOUNT
+                    //       </th>
+                    //     </>
+                    //     <tbody>
+                    //       <tr>
+                    //         <td>
+                    //           {dashboardDetails?.transaction?.transactionAmount}
+                    //         </td>
+                    //       </tr>
+                    //     </tbody>
+                    //   </table>
+                    // </div>
+                                     <div className="created_box">
+                                     <p>TRANSFERRED AMOUNT</p>
+                                     <h3 style={{ fontSize: 34, textAlign: "center" }}>
+                                     {dashboardDetails?.transaction?.transactionAmount}</h3>
+                                   </div>
+
+                  )}
                 </div>
               </div>
             </div>

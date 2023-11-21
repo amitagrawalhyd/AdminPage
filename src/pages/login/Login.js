@@ -5,6 +5,9 @@ import { useNavigate, createSearchParams } from "react-router-dom";
 import Cookies from "js-cookie";
 import { useAppContext } from "../../App";
 
+
+
+
 export default function Login() {
   // const companyId = Constants.companyId;
   const [mobileNumber, setMobileNumber] = useState("");
@@ -33,12 +36,11 @@ export default function Login() {
   
         let companylogo =
           !isEmpty(data) && !data.message
-            ? data.map((company) => company.companyLogo)[companyId - 1]
+            ? data.map((company) => company.companyLogo)[0]
             : undefined;
   
         sessionStorage.setItem("companylogo", companylogo);
         console.log("company logo: ", companylogo);
-  
         return companylogo;
       } catch (error) {
         console.error("Error fetching company details:", error);
@@ -75,6 +77,7 @@ export default function Login() {
             responseData.token
           );
           sessionStorage.setItem('logo', logo);          // navigate("/dashboard");  JSON.parse(decodedToken).CompanyId
+
           navigate("/dashboard", {
             state: { mobileNumber: mobileNumber, token: responseData.token },
           });
@@ -91,7 +94,7 @@ export default function Login() {
   }
 
   return (
-      <div className="container">
+      <div className="w-100">
         <div className="split-one">
           <div className="left-heading">
             Coupon App <br />
@@ -101,18 +104,39 @@ export default function Login() {
         </div>
 
         <div className="split-two">
-          <div className="login-form">
+        <form method="post" onSubmit={handleSubmit} className="w-75 m-auto p-5 login_form">
+          <h4 className="mb-3 font-weight-bold text-center">Login</h4>
+    <div class="form-group">
+    <label>Mobile Number: </label>
+      <input type="text" class="form-control"  placeholder="Enter Mobile NUmber"    value={mobileNumber}
+                onChange={(e) => setMobileNumber(e.target.value)} />
+    </div>
+    <div class="form-group">
+    <label>Passcode: </label>
+      <input type="text" class="form-control"  placeholder="Enter passcode" name="passcode"  value={passcode}
+                onChange={(e) => setPasscode(e.target.value)} />
+    </div>
+  
+    <button 
+     type="submit"
+     style={{
+       backgroundColor:
+        ( passcode.length < 6) === true ? "grey" : "#16219d",
+      
+     }}
+     disabled={passcode?.length < 6}
+     class="btn btn-primary align-self-flex-end">Login</button>
+  </form>
+          {/* <div className="login-form">
             <form method="post" onSubmit={handleSubmit}>
               <h3 className="text-center font-weight-bold">Login</h3>
               <label>Mobile Number: </label>
-              {/* <br /> */}
               <input
                 value={mobileNumber}
                 onChange={(e) => setMobileNumber(e.target.value)}
               />
               <br />
               <label>Passcode: </label>
-              {/* <br /> */}
               <input
                 value={passcode}
                 onChange={(e) => setPasscode(e.target.value)}
@@ -132,13 +156,12 @@ export default function Login() {
                   margin: 5,
                   border: 0,
                 }}
-                // backgroundColor={ passcode?.length < 6 ? 'grey': '#16219d'}
                 disabled={passcode?.length < 6}
               >
                 LOGIN
               </button>
             </form>
-          </div>
+          </div> */}
         </div>
       </div>
   );

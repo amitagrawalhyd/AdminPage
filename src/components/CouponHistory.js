@@ -8,6 +8,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { usePDF } from "react-to-pdf";
 import { useDownloadExcel } from "react-export-table-to-excel";
 import { useAddUser } from "./User/AddUser";
+import Loader from "react-js-loader";
 
 const CouponHistory = () => {
   const CompanyId = sessionStorage.getItem('CompanyId');
@@ -19,7 +20,6 @@ const CouponHistory = () => {
     "Name",
     "Date-Time",
   ];
-
   const [mobileNumber, setMobileNumber] = useState("");
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
@@ -27,6 +27,7 @@ const CouponHistory = () => {
   const tableRef = useRef(null); // for excel
   const {setEditmode} = useAddUser();
   setEditmode(false);
+  const [loading, setLoading] = useState(false);
 
   function formatDate (input) {
     var datePart = input.match(/\d+/g),
@@ -59,13 +60,16 @@ const CouponHistory = () => {
     getCouponHistory();
   }, []);
 
+
   const getCouponHistory = async () => {
     console.log('getCouponHistory is called');
+    setLoading(true);
+
     // if (!getDataCalled) {
     // getDataCalled = true;
     const token = sessionStorage.getItem('token');
 
-    if ( token) {
+    if (token) {
       const resp = await fetch(
         `http://183.83.219.144:81/LMS/Coupon/GetCouponTransactions/${CompanyId}?mobileNumber=${mobileNumber}&startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
         {
@@ -80,15 +84,9 @@ const CouponHistory = () => {
       const respJson = await resp.json();
       console.log("response: ", respJson);
       setCouponData(respJson);
-      // setLoading(false);
+      setLoading(false);
     }
     // }
-  };
-
-  const getCouponHisory = async () => {
-    // console.log('loading data:', storedMobileNumber, storedToken);
-
-    // setLoading(false);
   };
 
   const { onDownload } = useDownloadExcel({
@@ -99,9 +97,15 @@ const CouponHistory = () => {
 
   return (
     <>
-      <h4 className="header mb-2">Coupon History</h4>
+      {loading ? (
+        <div style={{display:"flex",alignItems:'center',justifyContent:'center',height:'85vh'}}>
+        <Loader bgColor={"#16210d"} type="spinner-cub"/>
+        </div>
+      ) : (
+        <div>
+      <h4 className="header mb-2 font-weight-bold">Coupon History</h4>
       <div>
-        <div className="d-flex align-items-center form_transaction">
+        <div className="d-flex align-items-center form_transaction ">
           <input
             className="form-control ml-0"
             style={{ margin: 10 }}
@@ -184,6 +188,8 @@ const CouponHistory = () => {
           </div>
         )}
       </div>
+      </div>
+      )}
     </>
   );
 };
