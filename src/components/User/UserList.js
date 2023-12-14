@@ -28,6 +28,7 @@ export default function UserList() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [registrationtypes, setRegistrationTypes] = useState([]); 
+  const Api = Constants.api;
 
 
   setEditmode(false);
@@ -46,7 +47,7 @@ export default function UserList() {
 
         if (mobileNumber) {
           const resp = await fetch(
-            `http://183.83.219.144:81/LMS/Registration/GetRegistrations/${CompanyId}`,
+            `${Api}/Registration/GetRegistrations/${CompanyId}`,
             {
               method: 'GET',
               headers: new Headers({
@@ -58,7 +59,7 @@ export default function UserList() {
           setRegistrations(responseData);
 
           const respose = await fetch(
-            `http://183.83.219.144:81/LMS/Registration/GetRegistrationTypes/${CompanyId}/${mobileNumber}`,
+            `${Api}/Registration/GetRegistrationTypes/${CompanyId}/${mobileNumber}`,
             {
               method: 'GET',
               headers: new Headers({
@@ -134,7 +135,7 @@ export default function UserList() {
       ? alert(JSON.stringify(user.registerName) + " Account restored")
       : alert(JSON.stringify(user.registerName) + " Account deleted");
 
-    fetch(`http://183.83.219.144:81/LMS/Registration/SaveRegistration`, {
+    fetch(`${Api}/Registration/SaveRegistration`, {
       method: "POST",
       headers: new Headers({
         Authorization: `Bearer ${getToken()}`,

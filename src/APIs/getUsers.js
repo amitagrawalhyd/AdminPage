@@ -8,7 +8,8 @@ export const getToken = () => {
   export function getUsers() {
 //   const storedMobileNumber = sessionStorage.getItem("mobileNumber");
 const CompanyId = sessionStorage.getItem('CompanyId');
-fetch(`http://183.83.219.144:81/LMS/Registration/GetRegistrations/${CompanyId}`, {
+const Api = Constants.api;
+fetch(`${Api}/Registration/GetRegistrations/${CompanyId}`, {
       method: 'GET',
       //Request Type
         headers: {

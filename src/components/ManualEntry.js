@@ -7,16 +7,43 @@ import Loader from 'react-js-loader';
 const ManualEntry = () => {
   const [couponCode, setCouponCode] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
+  const [validMobile, setValidMobile] = useState(true); // New state to track mobile number validation
   const CompanyId = sessionStorage.getItem('CompanyId');
+  const Api = Constants.api;
   const token = sessionStorage.getItem('token');
-  const {setEditmode} = useAddUser();
+  const { setEditmode } = useAddUser();
   const [loading, setLoading] = useState(false);
   setEditmode(false);
+
+  const validateMobileNumber = (value) => {
+    const mobileRegex = /^[0-9]{10}$/; 
+    return mobileRegex.test(value);
+  };
+
+  const handleMobileNumberChange = (e) => {
+    const newValue = e.target.value;
+    setMobileNumber(newValue);
+
+    const isMobileValid = validateMobileNumber(newValue);
+    setValidMobile(isMobileValid);
+  };
+
+
   function handleSubmit(event) {
-    setLoading(true);
     event.preventDefault();
+
+    // Validate mobile number
+    const isMobileValid = validateMobileNumber(mobileNumber);
+    setValidMobile(isMobileValid);
+
+    if (!isMobileValid) {
+      // Mobile number is not valid, you can show an error message or take appropriate action
+      return;
+    }
+
+    setLoading(true);
     fetch(
-      `http://183.83.219.144:81/LMS/Coupon/ConsumeManualCoupon/${CompanyId}/${couponCode}/${mobileNumber}`,
+      `${Api}/Coupon/ConsumeManualCoupon/${CompanyId}/${couponCode}/${mobileNumber}`,
       {
         method: "POST",
         headers: new Headers({
@@ -44,25 +71,25 @@ const ManualEntry = () => {
       <div className="manual-entry-form">
         <h4 className="header mb-2 text-center font-weight-bold">Manual Entry</h4>
         <form onSubmit={handleSubmit} className="form_transaction ">
-          <div >
+          <div>
             <label className="mb-0">Mobile Number</label>
             <input
-              className="form-control mx-auto "
+              className={`form-control mx-auto ${!validMobile ? 'is-invalid' : ''}`}
               type="text"
               value={mobileNumber}
-              onChange={(e) => setMobileNumber(e.target.value)}
+              onChange={handleMobileNumberChange}
             />
+            {!validMobile && <div className="invalid-feedback">Please enter a valid mobile number.</div>}
           </div>
-          <div >
+          <div>
             <label className="mb-0">Coupon Id</label>
             <input
-              className="form-control mx-auto  "
+              className="form-control mx-auto"
               type="text"
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value)}
             />
           </div>
-
           <br />
           <button
             className="btn btn-primary"
@@ -70,7 +97,7 @@ const ManualEntry = () => {
               alignSelf: "flex-end",
               position: "absolute",
               bottom: 0,
-              right:0,
+              right: 0,
               margin: 10,
               border: 0,
             }}

@@ -4,24 +4,32 @@ import { Constants } from "../../constants/credentials";
 import { useNavigate, createSearchParams } from "react-router-dom";
 import Cookies from "js-cookie";
 import { useAppContext } from "../../App";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
-
+const validationSchema = Yup.object().shape({
+  mobileNumber: Yup.string().required("Mobile Number is required").matches(
+    /^\d{10}$/,
+    "Invalid mobile number format"
+  ),
+  passcode: Yup.string().required("Passcode is required").min(6, "Passcode must be at least 6 characters"),
+});
 
 
 export default function Login() {
   // const companyId = Constants.companyId;
-  const [mobileNumber, setMobileNumber] = useState("");
-  const [passcode, setPasscode] = useState("");
   const navigate = useNavigate();
   const { setToken } = useAppContext();
   const [companydetails, setCompanyDetails] = useState({});
   var isEmpty = require("lodash.isempty");
+const Api = Constants.api;
+  
 
   const getCompanyLogo = async (companyId, token) => {
     if (token) {
       try {
         const resp = await fetch(
-          `http://183.83.219.144:81/LMS/Company/Companies/${companyId}`,
+          `${Api}/Company/Companies/${companyId}`,
           {
             method: 'GET',
             headers: new Headers({
@@ -48,50 +56,98 @@ export default function Login() {
     }
   };
   
+  const formik = useFormik({
+    initialValues: {
+      mobileNumber: "",
+      passcode: "",
+    },
+    validationSchema: validationSchema,
+    onSubmit:  (values) => {
+    
+       fetch(
+          `${Api}/Otp/ValidatePasscode/${values.mobileNumber}/${values.passcode}`,
+          {
+            method: "POST",
+          }
+        ) .then((response) => response.json())
+        .then(async (responseData) => {
+          console.log("login validation:", responseData.validationResult);
+          if (responseData.validationResult) {
+            // Cookies.set("token", responseData.token); 
+            setToken(responseData.token);
+            // Cookies.set("mobileNumber", mobileNumber);
+            sessionStorage.setItem("token", responseData.token);//set to session storage
+            sessionStorage.setItem("mobileNumber", values.mobileNumber);
+            sessionStorage.setItem("CompanyId",JSON.parse(atob(responseData.token)).CompanyId)
+            sessionStorage.setItem("parentRegistrationId",JSON.parse(atob(responseData.token)).RegistrationId)
+            // const logo = getCompanyLogo(JSON.parse(atob(responseData.token)).CompanyId);
+            // console.log('logo fetched after login:',logo);
+            const logo = await getCompanyLogo(
+              JSON.parse(atob(responseData.token)).CompanyId,
+              responseData.token
+            );
+            sessionStorage.setItem('logo', logo);        
+              navigate("/dashboard");
+              //  JSON.parse(decodedToken).CompanyId
+  
 
-  function handleSubmit(e) {
-    // Prevent the browser from reloading the page
-    e.preventDefault();
-    // navigate("/dashboard");
-    fetch(
-      `http://183.83.219.144:81/LMS/Otp/ValidatePasscode/${mobileNumber}/${passcode}`,
-      {
-        method: "POST",
-      }
-    )
-      .then((response) => response.json())
-      .then(async (responseData) => {
-        console.log("login validation:", responseData.validationResult);
-        if (responseData.validationResult) {
-          // Cookies.set("token", responseData.token); 
-          setToken(responseData.token);
-          // Cookies.set("mobileNumber", mobileNumber);
-          sessionStorage.setItem("token", responseData.token);//set to session storage
-          sessionStorage.setItem("mobileNumber", mobileNumber);
-          sessionStorage.setItem("CompanyId",JSON.parse(atob(responseData.token)).CompanyId)
-          sessionStorage.setItem("parentRegistrationId",JSON.parse(atob(responseData.token)).RegistrationId)
-          // const logo = getCompanyLogo(JSON.parse(atob(responseData.token)).CompanyId);
-          // console.log('logo fetched after login:',logo);
-          const logo = await getCompanyLogo(
-            JSON.parse(atob(responseData.token)).CompanyId,
-            responseData.token
-          );
-          sessionStorage.setItem('logo', logo);          // navigate("/dashboard");  JSON.parse(decodedToken).CompanyId
+  
+            // navigate({
+            //   pathname: '/dashboard',
+            //   search: createSearchParams({ mobileNumber: values.mobileNumber}),
+            // });
+          } else if (!responseData.validationResult) {
+            alert("Invalid credentials :(");
+          }
+        })
+        .catch((error) => console.log(error));
+      
+    },
+  });
 
-          navigate("/dashboard", {
-            state: { mobileNumber: mobileNumber, token: responseData.token },
-          });
+  // function handleSubmit(e) {
+  //   // Prevent the browser from reloading the page
+  //   e.preventDefault();
+  //   // navigate("/dashboard");
+  //   fetch(
+  //     `${Api}/Otp/ValidatePasscode/${mobileNumber}/${passcode}`,
+  //     {
+  //       method: "POST",
+  //     }
+  //   )
+  //     .then((response) => response.json())
+  //     .then(async (responseData) => {
+  //       console.log("login validation:", responseData.validationResult);
+  //       if (responseData.validationResult) {
+  //         // Cookies.set("token", responseData.token); 
+  //         setToken(responseData.token);
+  //         // Cookies.set("mobileNumber", mobileNumber);
+  //         sessionStorage.setItem("token", responseData.token);//set to session storage
+  //         sessionStorage.setItem("mobileNumber", mobileNumber);
+  //         sessionStorage.setItem("CompanyId",JSON.parse(atob(responseData.token)).CompanyId)
+  //         sessionStorage.setItem("parentRegistrationId",JSON.parse(atob(responseData.token)).RegistrationId)
+  //         // const logo = getCompanyLogo(JSON.parse(atob(responseData.token)).CompanyId);
+  //         // console.log('logo fetched after login:',logo);
+  //         const logo = await getCompanyLogo(
+  //           JSON.parse(atob(responseData.token)).CompanyId,
+  //           responseData.token
+  //         );
+  //         sessionStorage.setItem('logo', logo);          // navigate("/dashboard");  JSON.parse(decodedToken).CompanyId
 
-          // navigate({
-          //   pathname: '/dashboard',
-          //   search: createSearchParams({ mobileNumber: mobileNumber}),
-          // });
-        } else if (!responseData.validationResult) {
-          alert("Invalid credentials :(");
-        }
-      })
-      .catch((error) => console.log(error));
-  }
+  //         navigate("/dashboard", {
+  //           state: { mobileNumber: mobileNumber, token: responseData.token },
+  //         });
+
+  //         // navigate({
+  //         //   pathname: '/dashboard',
+  //         //   search: createSearchParams({ mobileNumber: mobileNumber}),
+  //         // });
+  //       } else if (!responseData.validationResult) {
+  //         alert("Invalid credentials :(");
+  //       }
+  //     })
+  //     .catch((error) => console.log(error));
+  // }
 
   return (
       <div className="w-100">
@@ -104,27 +160,50 @@ export default function Login() {
         </div>
 
         <div className="split-two">
-        <form method="post" onSubmit={handleSubmit} className="w-75 m-auto p-5 login_form">
+        <form method="post"           onSubmit={formik.handleSubmit}
+ className="w-75 m-auto p-5 login_form">
           <h4 className="mb-3 font-weight-bold text-center">Login</h4>
-    <div class="form-group">
-    <label>Mobile Number: </label>
-      <input type="text" class="form-control"  placeholder="Enter Mobile NUmber"    value={mobileNumber}
-                onChange={(e) => setMobileNumber(e.target.value)} />
-    </div>
-    <div class="form-group">
-    <label>Passcode: </label>
-      <input type="text" class="form-control"  placeholder="Enter passcode" name="passcode"  value={passcode} autoComplete="off"
-                onChange={(e) => setPasscode(e.target.value)} />
-    </div>
+          <div className="form-group">
+            <label>Mobile Number: </label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Enter Mobile Number"
+              name="mobileNumber"
+              value={formik.values.mobileNumber}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              autoComplete="off"
+            />
+            {formik.touched.mobileNumber && formik.errors.mobileNumber && (
+              <div className="form-error text-danger">{formik.errors.mobileNumber}</div>
+            )}
+          </div>
+          <div className="form-group">
+            <label>Passcode: </label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Enter passcode"
+              name="passcode"
+              value={formik.values.passcode}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              autoComplete="off"
+            />
+            {formik.touched.passcode && formik.errors.passcode && (
+              <div className="form-error text-danger">{formik.errors.passcode}</div>
+            )}
+          </div>
   
     <button 
      type="submit"
      style={{
        backgroundColor:
-        ( passcode.length < 6) === true ? "grey" : "#16219d",
+        (formik.errors.passcode || formik.errors.mobileNumber) === true ? "grey" : "#16219d",
       
      }}
-     disabled={passcode?.length < 6}
+     disabled={formik.errors.passcode || formik.errors.mobileNumber}
      class="btn btn-primary align-self-flex-end">Login</button>
   </form>
           {/* <div className="login-form">

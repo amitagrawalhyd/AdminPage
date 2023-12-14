@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useAddUser } from "./User/AddUser";
 import DatePicker from "react-datepicker";
 import Loader from "react-js-loader";
+import { Constants } from "../constants/credentials";
 
 const PendingTransactons = () => {
   const CompanyId = sessionStorage.getItem("CompanyId");
+const Api = Constants.api;
   const token = sessionStorage.getItem("token");
   const [pendingtransactions, setPendingTransactions] = useState([]);
   let heading = [
@@ -23,7 +25,9 @@ const PendingTransactons = () => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
   const [usernumbers, setUserNumbers] = useState([]);
-  const [startDate, setStartDate] = useState(new Date());
+  const lastWeekStartDate = new Date();  // last week date as default date
+  lastWeekStartDate.setDate(lastWeekStartDate.getDate() - 7);
+  const [startDate, setStartDate] = useState(lastWeekStartDate);
   const [endDate, setEndDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
   const { setEditmode } = useAddUser();
@@ -81,7 +85,7 @@ const PendingTransactons = () => {
     const completeTransations = await Promise.all(
       selectedItems.map(async (transaction) => {
         const response = await fetch(
-          `http://183.83.219.144:81/LMS/Coupon/CreatePayout/${CompanyId}/${
+          `${Api}/Coupon/CreatePayout/${CompanyId}/${
             transaction.id
           }/${transaction.upiAddress}/${transaction.payoutFundAccountId}/${
             transaction.transactionAmount * 100
@@ -98,6 +102,14 @@ const PendingTransactons = () => {
     );
     // navigate("/pendingtransactions");
     // window.location.reload();
+    const completeFailed = completeTransations.some((response) => !response);
+    console.log("notification status:", completeFailed);
+
+    if (completeFailed) {
+      alert("Failed to complete some transactions.");
+    } else {
+      alert("Transaction(s) completed successfully.");
+    }
     getPendingTransactions();
     setLoading(false);
     setSelectedItems([]);
@@ -108,7 +120,7 @@ const PendingTransactons = () => {
     setLoading(true);
     //for total transactions list
     const resp = await fetch(
-      `http://183.83.219.144:81/LMS/Coupon/GetPendingTransactions/${CompanyId}/${mobileNumber}?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
+      `${Api}/Coupon/GetPendingTransactions/${CompanyId}/${mobileNumber}?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
       {
         method: "GET",
         headers: new Headers({
@@ -155,7 +167,7 @@ const PendingTransactons = () => {
             style={{
               display: "flex",
               flexDirection: "row",
-              marginBottom: 10,
+              marginBottom: 15,
               alignItems: "center",
               justifyContent: "space-between",
             }}

@@ -10,6 +10,7 @@ import { useFormik } from "formik";
 import { getToken } from "./UserList";
 import { useNavigate } from "react-router-dom";
 import Loader from "react-js-loader";
+import { Constants } from "../../constants/credentials";
 
 
 const AddUserContext = createContext();
@@ -69,6 +70,8 @@ export const useAddUser = () => {
 
 export default function AddUser() {
   const CompanyId = sessionStorage.getItem("CompanyId");
+const Api = Constants.api;
+  
   const storedMobileNumber = sessionStorage.getItem("mobileNumber");
   const [registrationTypes, setRegistrationTypes] = useState([]); // types of registrations (distributor,dealer,mechanic)
   const [adminDetails, setAdminDetails] = useState([]); // admin details
@@ -87,7 +90,7 @@ export default function AddUser() {
   const getRegistrationTypes = async () => {
     setLoading(true);
     const resp = await fetch(
-      `http://183.83.219.144:81/LMS/Registration/GetRegistrationTypes/${CompanyId}/${storedMobileNumber}`,
+      `${Api}/Registration/GetRegistrationTypes/${CompanyId}/${storedMobileNumber}`,
       {
         method: "GET",
         headers: new Headers({
@@ -132,7 +135,7 @@ export default function AddUser() {
       );
       setEditmode(false);
       setLoading(true);
-      fetch(`http://183.83.219.144:81/LMS/Registration/SaveRegistration`, {
+      fetch(`${Api}/Registration/SaveRegistration`, {
         method: "POST",
         headers: new Headers({
           Authorization: `Bearer ${getToken()}`,

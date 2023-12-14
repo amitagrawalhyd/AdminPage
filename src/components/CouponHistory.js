@@ -9,9 +9,15 @@ import { usePDF } from "react-to-pdf";
 import { useDownloadExcel } from "react-export-table-to-excel";
 import { useAddUser } from "./User/AddUser";
 import Loader from "react-js-loader";
+import saveAs from "file-saver";
+
+const ExcelJS = require("exceljs");
+
+
 
 const CouponHistory = () => {
-  const CompanyId = sessionStorage.getItem('CompanyId');
+const CompanyId = sessionStorage.getItem('CompanyId');
+const Api = Constants.api;
   const [couponData, setCouponData] = useState([]);
   let heading = [
     "Coupon Id",
@@ -71,7 +77,7 @@ const CouponHistory = () => {
 
     if (token) {
       const resp = await fetch(
-        `http://183.83.219.144:81/LMS/Coupon/GetCouponTransactions/${CompanyId}?mobileNumber=${mobileNumber}&startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
+        `${Api}/Coupon/GetCouponTransactions/${CompanyId}?mobileNumber=${mobileNumber}&startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
         {
           method: "GET",
           headers: new Headers({
@@ -89,11 +95,62 @@ const CouponHistory = () => {
     // }
   };
 
-  const { onDownload } = useDownloadExcel({
-    currentTableRef: tableRef.current,
-    filename: "Coupon History",
-    sheet: "Coupons",
-  });
+  const exportExcelFile = () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Coupon History");
+    sheet.columns = [
+      {
+        header: "Coupon Id",
+        key: "couponId",
+        width: 20,
+      },
+      {
+        header: "Coupon Value",
+        key: "couponValue",
+        width: 15,
+      },
+      {
+        header: "Mobile Number",
+        key: "mobileNumber",
+        width: 20,
+      },
+      {
+        header: "Name",
+        key: "name",
+        width: 20,
+      },
+      {
+        header: "Date-Time",
+        key: "date",
+        width: 20,
+      },
+    ];
+    const promise = Promise.all(
+      couponData?.map(async (coupon) => {
+        // const rowNumber = index + 1;
+        sheet.addRow({
+          couponId: coupon.couponIdentity,
+          couponValue: coupon.faceValue,
+          mobileNumber: coupon.registerMobileNumber,
+          name: coupon.registerName,
+          date: formatDate(coupon.changeDate.split("T")[0]) +", "+coupon.changeDate.split("T")[1].split('.')[0],
+        });
+      })
+    );
+    promise.then(() => {
+      console.log("pormise:", promise);
+    });
+
+    const faceValueColumn = sheet.getColumn("couponValue");
+    faceValueColumn.alignment = { horizontal: "center" };
+
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      saveAs(blob, "Coupon History.xlsx");
+    });
+  };
 
   return (
     <>
@@ -170,7 +227,7 @@ const CouponHistory = () => {
               </table>
             </div>
             <div>
-              <button className="btn btn-secondary mb-2" onClick={onDownload}>
+              <button className="btn btn-secondary mb-2" onClick={exportExcelFile}>
                 {" "}
                 Export to Excel{" "}
               </button>

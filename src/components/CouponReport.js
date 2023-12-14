@@ -15,6 +15,7 @@ const ExcelJS = require("exceljs");
 
 const CouponReport = () => {
   const CompanyId = sessionStorage.getItem("CompanyId");
+const Api = Constants.api;
   const [couponReport, setCouponReport] = useState([]);
   let heading = ["Coupon Id", "Coupon Value", "Created date", "Expiry date"];
   const [loading, setLoading] = useState(false);
@@ -74,7 +75,7 @@ const CouponReport = () => {
 
     if (token) {
       const resp = await fetch(
-        `http://183.83.219.144:81/LMS/Coupon/CouponReport/${CompanyId}/${mobileNumber}/${formattedStartDate}/${formattedEndDate}`,
+        `${Api}/Coupon/CouponReport/${CompanyId}/${mobileNumber}/${formattedStartDate}/${formattedEndDate}`,
         {
           method: "GET",
           headers: new Headers({

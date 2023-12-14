@@ -19,6 +19,8 @@ const Dashboard = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const CompanyId = sessionStorage.getItem("CompanyId");
+const Api = Constants.api;
+  
   const token = sessionStorage.getItem("token");
   // const { token } = useAppContext();
 
@@ -58,7 +60,7 @@ const Dashboard = () => {
     console.log("dashboad details called");
     setLoading(true);
     const resp = await fetch(
-      `http://183.83.219.144:81/LMS/Coupon/CouponSummary/${CompanyId}/${mobileNumber}?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
+      `${Api}/Coupon/CouponSummary/${CompanyId}/${mobileNumber}?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
       {
         method: "GET",
         headers: new Headers({

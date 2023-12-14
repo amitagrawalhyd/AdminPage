@@ -4,6 +4,8 @@ import "../App.css";
 import { useAddUser } from "./User/AddUser";
 import "react-dropdown/style.css";
 import Loader from "react-js-loader";
+import { Constants } from "../constants/credentials";
+
 
 const Notifications = () => {
   const [title, setTitle] = useState();
@@ -16,6 +18,7 @@ const Notifications = () => {
   const [img, setImg] = useState("");
   const reader = new FileReader();  
   const CompanyId = sessionStorage.getItem("CompanyId");
+  const Api = Constants.api;
   const [registrationtypes, setRegistrationTypes] = useState([]); 
   const [selected, setSelected] = useState(""); // Define 'selected' here
   const [loading, setLoading] = useState(false);
@@ -30,7 +33,7 @@ const Notifications = () => {
   async function getRegistrationTypes() {
     setLoading(true);
     const resp = await fetch(
-      `http://183.83.219.144:81/LMS/Registration/GetRegistrationTypes/${CompanyId}/${mobileNumber}`,
+      `${Api}/Registration/GetRegistrationTypes/${CompanyId}/${mobileNumber}`,
       {
         method: "GET",
         headers: new Headers({
@@ -45,7 +48,7 @@ const Notifications = () => {
     setRegistrationTypes(data);
     setLoading(false);
   }
-
+  
   file && reader.readAsDataURL(file);
   reader.onload = () => {
     setImg(reader.result);
@@ -69,7 +72,7 @@ const Notifications = () => {
       requestBody.registrationType = selected;
     }
 
-    fetch(`http://183.83.219.144:81/LMS/Notification/SaveNotification`, {
+    fetch(`${Api}/Notification/SaveNotification`, {
       method: "POST",
       headers: new Headers({
         Authorization: `Bearer ${token}`,
@@ -84,11 +87,13 @@ const Notifications = () => {
           setTitle("");
           setDescription("");
           setFile("");
+          setImg("");
         } else {
           alert("failed to send notification");
           setTitle("");
           setDescription("");
           setFile("");
+          setImg("");
         }
         console.log("response from savenotification:", responseData);
         setLoading(false);
@@ -154,7 +159,7 @@ const Notifications = () => {
               )}
             </select>
             <img
-              style={{ width: file ? "50%": "15%", height:file ? "50%" : '15%', margin: "10px 0px" }}
+              style={{ width: file ? "25%": "15%", height:file ? "25%" : '15%', margin: "10px 0px" }}
               src={
                 file
                   ? URL.createObjectURL(file)

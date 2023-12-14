@@ -5,6 +5,7 @@ import "../App.css";
 import { getToken } from "./User/UserList";
 import * as Yup from "yup";
 import Loader from "react-js-loader";
+import { Constants } from "../constants/credentials";
 
 const NotifyUsers = () => {
   const [title, setTitle] = useState("");
@@ -16,6 +17,7 @@ const NotifyUsers = () => {
   const [img, setImg] = useState("");
   const reader = new FileReader();
   const CompanyId = sessionStorage.getItem("CompanyId");
+const Api = Constants.api;
   const [registrations, setRegistrations] = useState([]); // users
   let heading = ["Select", "Mobile Number", "Name"];
   const [selectedItems, setSelectedItems] = useState([]); // for checkbox
@@ -39,7 +41,7 @@ const NotifyUsers = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://183.83.219.144:81/LMS/Registration/GetRegistrations/${CompanyId}`,
+        `${Api}/Registration/GetRegistrations/${CompanyId}`,
         {
           method: "GET",
           headers: new Headers({
@@ -63,7 +65,7 @@ const NotifyUsers = () => {
 
   file && reader.readAsDataURL(file);
   reader.onload = () => {
-    // console.log('called: ', reader)
+    console.log('called: ', reader)
     setImg(reader.result);
   };
 
@@ -75,7 +77,7 @@ const NotifyUsers = () => {
     responseArray = await Promise.all(
       selectedItems.map(async (user) => {
         const response = await fetch(
-          `http://183.83.219.144:81/LMS/Notification/SaveNotification`,
+          `${Api}/Notification/SaveNotification`,
           {
             method: "POST",
             headers: new Headers({
@@ -86,7 +88,7 @@ const NotifyUsers = () => {
               companyId: CompanyId,
               title: title,
               description: description,
-              imageURL: img.split(",").pop(),
+              imageURL: img?.split(",").pop(),
               startDateTime: startDate.toISOString(),
               endDateTime: endDate.toISOString(),
               isActive: true,
@@ -98,6 +100,7 @@ const NotifyUsers = () => {
         return await response.json();
       })
     );
+    setLoading(false);
     console.log("responseArray:", responseArray);
     // Check if any element in responseArray is false
     const notificationFailed = responseArray.some((response) => !response);
@@ -114,9 +117,11 @@ const NotifyUsers = () => {
     setTitle("");
     setDescription("");
     setFile("");
+    setImg("");
     setSelectedItems([]);
-    setLoading(false);
   };
+
+console.log('img:',img,'file:',file);
 
   return (
     <>
@@ -149,6 +154,7 @@ const NotifyUsers = () => {
                       <td>
                         <input
                           type="checkbox"
+                          className="custom-checkbox"
                           checked={selectedItems.includes(user)}
                           onChange={() => handleCheckboxChange(user)}
                         />
@@ -177,8 +183,8 @@ const NotifyUsers = () => {
               />
               <img
                 style={{
-                  width: file ? "50%" : "15%",
-                  height: file ? "50%" : "15%",
+                  width: file ? "25%" : "15%",
+                  height: file ? "25%" : "15%",
                   margin: "10px 0px",
                 }}
                 src={
@@ -201,13 +207,13 @@ const NotifyUsers = () => {
                   type="file"
                   id="file"
                   onChange={(e) => setFile(e.target.files[0])}
-                  accept="image/*"
+                  accept=".png, .jpg, .jpeg, .gif"
                   // style={{ display: "none" }}
                 />
               </label>
 
               <button
-                onClick={handleNotify}
+                onClick={() => handleNotify()}
                 style={{
                   color: "white",
                   padding: 5,

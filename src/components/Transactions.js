@@ -6,11 +6,14 @@ import "react-dropdown/style.css";
 import saveAs from "file-saver";
 import { useAddUser } from "./User/AddUser";
 import Loader from "react-js-loader";
+import { Constants } from "../constants/credentials";
 
 const ExcelJS = require("exceljs");
 
 const Transactions = () => {
   const CompanyId = sessionStorage.getItem("CompanyId");
+const Api = Constants.api;
+
   const token = sessionStorage.getItem("token");
   const [mobileNumber, setMobileNumber] = useState("");
   const [startDate, setStartDate] = useState(new Date());
@@ -77,7 +80,7 @@ const Transactions = () => {
   const getTransactions = async () => {
     setLoading(true);
     const resp = await fetch(
-      `http://183.83.219.144:81/LMS/Coupon/GetTransactions/${CompanyId}?mobileNumber=${mobileNumber}&startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
+      `${Api}/Coupon/GetTransactions/${CompanyId}?mobileNumber=${mobileNumber}&startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
       {
         method: "GET",
         headers: new Headers({
@@ -105,7 +108,7 @@ const Transactions = () => {
     const completeTransations = await Promise.all(
       selectedItems.map(async (transaction) => {
         const response = await fetch(
-          `http://183.83.219.144:81/LMS/Coupon/RequeueTransaction/${CompanyId}/${
+          `${Api}/Coupon/RequeueTransaction/${CompanyId}/${
             transaction.id
           }/${transaction.upiAddress}/${transaction.payoutFundAccountId}/${
             transaction.transactionAmount * 100
@@ -392,7 +395,6 @@ const Transactions = () => {
             </div>
             {filteredTransactions?.length !== 0 && (
               <div>
-
                 <button
                   className="btn btn-secondary mb-2"
                   onClick={exportExcelFile}

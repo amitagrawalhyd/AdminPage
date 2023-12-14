@@ -67,7 +67,7 @@ svg {
 }
 
 .form_transaction {
-  margin: 20px 0px;
+  margin: 15px 0px;
 }
 .form_transaction input {
   width: 180px;
@@ -255,4 +255,8 @@ input {
 }
 .custom-checkbox {
   transform: scale(1.5); /* Adjust the scale factor as needed */
+}
+
+.form-error{
+  font-size: 11px; 
 }
