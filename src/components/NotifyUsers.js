@@ -150,7 +150,7 @@ console.log('img:',img,'file:',file);
               <tbody>
                 {!registrations.message &&
                   registrations?.map((user) => (
-                    <tr>
+                    <tr key={user.registrationId}>
                       <td>
                         <input
                           type="checkbox"
@@ -222,7 +222,6 @@ console.log('img:',img,'file:',file);
                   border: 0,
                   cursor: !title || !description ? "not-allowed" : "pointer",
                   bottom: 15,
-                  border: 0,
                   right: 15,
                   position: "absolute",
                 }}

@@ -132,29 +132,17 @@ const Api = Constants.api;
   const filteredTransactions =
     !transactions.message && transactions?.filter(filterTransactions);
 
-  function filterTransactions(transaction) {
-    if (
-      transaction.isPaid &&
-      transaction.isActive &&
-      selected === "Completed"
-    ) {
-      return transaction;
-    } else if (
-      !transaction.isPaid &&
-      transaction.isActive &&
-      selected === "Pending"
-    ) {
-      return transaction;
-    } else if (
-      !transaction.isPaid &&
-      !transaction.isActive &&
-      selected === "Rejected"
-    ) {
-      return transaction;
-    } else if (selected === "All") {
-      return transaction;
-    }
+    function filterTransactions(transaction) {
+      if (
+    (transaction.isPaid && transaction.isActive && selected === "Completed") ||
+    (!transaction.isPaid && transaction.isActive && selected === "Pending") ||
+    (!transaction.isPaid && !transaction.isActive && selected === "Rejected") ||
+    selected === "All"
+  ) {
+    return transaction;
   }
+  
+    }
 
   const exportExcelFile = () => {
     const workbook = new ExcelJS.Workbook();
@@ -216,8 +204,7 @@ const Api = Constants.api;
     );
     promise.then(() => {
       console.log("pormise:", promise);
-    });
-
+    }).catch((error) => console.log('error in promise:', error));
 
     const amountColumn = sheet.getColumn("amount");
     amountColumn.alignment = { horizontal: "center" };
@@ -227,7 +214,7 @@ const Api = Constants.api;
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
       saveAs(blob, "transactions.xlsx");
-    });
+    }).catch((error) => console.log('error while converting to xlsx:',error));
   };
 
   return (
@@ -295,7 +282,7 @@ const Api = Constants.api;
 
             <button
               type="button"
-              class="btn btn-primary"
+              className="btn btn-primary"
               style={{ margin: 10 }}
               onClick={getTransactions}
             >
@@ -338,8 +325,8 @@ const Api = Constants.api;
                         )
                         .reverse()
                         ?.map((transaction) => (
-                          <tr>
-                            {
+                          <tr key={transaction.id}>
+                          {
                               // (!transaction.isActive && !transaction.isPaid) ||
                               transaction.payoutStatus === "rejected" ||
                               transaction.payoutStatus === "reversed" ||

@@ -80,42 +80,75 @@ const Api = Constants.api;
   }
   const formattedEndDate = endDate && formatEndDate();
 
+  // const handleComplete = async () => {
+  //   setLoading(true);
+  //   const completeTransations = await Promise.all(
+  //     selectedItems.map(async (transaction) => {
+  //       const response = await fetch(
+  //         `${Api}/Coupon/CreatePayout/${CompanyId}/${
+  //           transaction.id
+  //         }/${transaction.upiAddress}/${transaction.payoutFundAccountId}/${
+  //           transaction.transactionAmount * 100
+  //         }`,
+  //         {
+  //           method: "POST",
+  //           headers: new Headers({
+  //             Authorization: `Bearer ${token}`,
+  //           }),
+  //         }
+  //       );
+  //       return await response.json();
+  //     })
+  //   );
+  //   // navigate("/pendingtransactions");
+  //   // window.location.reload();
+  //   const completeFailed = completeTransations.some((response) => !response);
+  //   console.log("notification status:", completeFailed);
+
+  //   if (completeFailed) {
+  //     alert("Failed to complete some transactions.");
+  //   } else {
+  //     alert("Transaction(s) completed successfully.");
+  //   }
+  //   getPendingTransactions();
+  //   setLoading(false);
+  //   setSelectedItems([]);
+  //   console.log("complete api response:", completeTransations);
+  // };
   const handleComplete = async () => {
     setLoading(true);
-    const completeTransations = await Promise.all(
-      selectedItems.map(async (transaction) => {
-        const response = await fetch(
-          `${Api}/Coupon/CreatePayout/${CompanyId}/${
-            transaction.id
-          }/${transaction.upiAddress}/${transaction.payoutFundAccountId}/${
-            transaction.transactionAmount * 100
-          }`,
-          {
-            method: "POST",
-            headers: new Headers({
-              Authorization: `Bearer ${token}`,
-            }),
-          }
-        );
-        return await response.json();
-      })
-    );
-    // navigate("/pendingtransactions");
-    // window.location.reload();
-    const completeFailed = completeTransations.some((response) => !response);
-    console.log("notification status:", completeFailed);
-
-    if (completeFailed) {
-      alert("Failed to complete some transactions.");
-    } else {
-      alert("Transaction(s) completed successfully.");
+  
+    for (const transaction of selectedItems) {
+      const response = await fetch(
+        `${Api}/Coupon/CreatePayout/${CompanyId}/${
+          transaction.id
+        }/${transaction.upiAddress}/${transaction.payoutFundAccountId}/${
+          transaction.transactionAmount * 100
+        }`,
+        {
+          method: "POST",
+          headers: new Headers({
+            Authorization: `Bearer ${token}`,
+          }),
+        }
+      );
+  
+      const result = await response.json();
+  // console.log('respone:',result);
+      if (!result) {
+        alert("Failed to complete the transaction of ₹ ",transaction.transactionAmount);
+        // setLoading(false);
+        // return; // Stop processing further transactions on failure
+      }
     }
+    // All transactions completed successfully
+    alert("Transaction(s) completed successfully.");
     getPendingTransactions();
     setLoading(false);
     setSelectedItems([]);
-    console.log("complete api response:", completeTransations);
+    setSelectAll(false);
   };
-
+  
   const getPendingTransactions = async () => {
     setLoading(true);
     //for total transactions list
@@ -249,7 +282,7 @@ const Api = Constants.api;
                         new Date(...b.transactionDate.split("T")[0].split("-"))
                     )
                     ?.map((transaction) => (
-                      <tr>
+                      <tr key={transaction.id}>
                         {/* <td> <input value={transaction.id} type = "checkbox" onChange = {handleChange} /> </td> */}
                         <td>
                           <input

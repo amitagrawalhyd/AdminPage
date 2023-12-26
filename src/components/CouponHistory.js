@@ -139,7 +139,7 @@ const Api = Constants.api;
     );
     promise.then(() => {
       console.log("pormise:", promise);
-    });
+    }).catch((error) => console.log("error in promise:", error));
 
     const faceValueColumn = sheet.getColumn("couponValue");
     faceValueColumn.alignment = { horizontal: "center" };
@@ -149,7 +149,7 @@ const Api = Constants.api;
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
       saveAs(blob, "Coupon History.xlsx");
-    });
+    }).catch((error) => console.log('error in xlsx:',error));
   };
 
   return (
@@ -209,7 +209,7 @@ const Api = Constants.api;
                   {!couponData.message && couponData
                     ?.sort((a, b) => b.changeDate.localeCompare(a.changeDate))
                     ?.map((coupon) => (
-                      <tr>
+                      <tr key={coupon.couponIdentity}>
                         <td className="coupon">{coupon.couponIdentity}</td>
                         <td className="coupon">{coupon.faceValue}</td>
                         <td className="coupon">

@@ -195,7 +195,6 @@ const Notifications = () => {
                 border: 0,
                 cursor: (!title || !description) ? "not-allowed" : "pointer",
                 bottom: 15,
-                border: 0,
                 right: 15,
                 position: "absolute",
 

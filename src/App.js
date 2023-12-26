@@ -50,6 +50,7 @@ import PageNotFound from "./components/PageNotFound";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import NotifyUsers from "./components/NotifyUsers";
+import DOMPurify from 'dompurify';
 
 // const Home = () => {
 //   return (
@@ -90,6 +91,8 @@ const App = () => {
   const companylogo =
     location.pathname !== "/" && sessionStorage.getItem("logo");
   console.log("logo from appjs:", companylogo);
+  const sanitizedCompanyLogo = DOMPurify.sanitize(companylogo);
+
 
   return (
     <div
@@ -109,7 +112,7 @@ const App = () => {
             > */}
             <img
               className="logo"
-              src={`data:image/jpg;base64,${companylogo}`}
+              src={`data:image/jpg;base64,${sanitizedCompanyLogo}`}
             />
             {/* <img className="logo" src={'https://plus.unsplash.com/premium_photo-1669324357471-e33e71e3f3d8?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'} /> */}
             {/* </MenuItem> */}

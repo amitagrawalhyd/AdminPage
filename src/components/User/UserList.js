@@ -82,24 +82,14 @@ export default function UserList() {
 
 
   function filterUsers(user) {
-    if (user.registrationType === "Company" && selected === "Company") {
-      return user;
-    } else if (
-      user.registrationType === "Distributer" &&
-      selected === "Distributer"
+    if (
+      (user.registrationType === selected) ||
+      (selected === "" || selected === 'All')
     ) {
-      return user;
-    } else if (user.registrationType === "Dealer" && selected === "Dealer") {
-      return user;
-    } else if (
-      user.registrationType === "Mechanic" &&
-      selected === "Mechanic"
-    ) {
-      return user;
-    } else if (selected === "" || selected === 'All') {
       return user;
     }
   }
+
 
   const filteredUsers =
     !registrations.message && registrations?.filter(filterUsers);
@@ -192,14 +182,14 @@ export default function UserList() {
     );
     promise.then(() => {
       console.log("promise:", promise);
-    });
+    }).catch((error) => console.log('An error occured in promise:',error))
 
     workbook.xlsx.writeBuffer().then((buffer) => {
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
       saveAs(blob, "userlist.xlsx");
-    });
+    }).catch((error) => console.log('error while converting to xlsx:',error));
   };
 
   return (
@@ -257,7 +247,7 @@ export default function UserList() {
               <tbody>
                 {!registrations.message &&
                   filteredUsers?.map((user) => (
-                    <tr>
+                    <tr key={user.registrationId}>
                       <td className="user">{user.registerMobileNumber}</td>
                       <td className="user"> {user.registerName}</td>
                       <td className="user">{user.city}</td>

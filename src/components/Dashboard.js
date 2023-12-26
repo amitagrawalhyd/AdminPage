@@ -141,8 +141,8 @@ const Api = Constants.api;
                             {typeof dashboardDetails.scannedCoupons !==
                               "undefined" &&
                             dashboardDetails.scannedCoupons.length > 0 ? (
-                              dashboardDetails?.scannedCoupons.map((coupon) => (
-                                <tr>
+                              dashboardDetails?.scannedCoupons.map((coupon, index) => (
+                                <tr key={index}>
                                   <td style={{ textAlign: "center" }}>
                                     {" "}
                                     {coupon?.faceValue}
@@ -198,8 +198,8 @@ const Api = Constants.api;
                           {typeof dashboardDetails.expiredCoupons !==
                             "undefined" &&
                           dashboardDetails.expiredCoupons.length > 0 ? (
-                            dashboardDetails?.expiredCoupons.map((coupon) => (
-                              <tr>
+                            dashboardDetails?.expiredCoupons.map((coupon, index ) => (
+                              <tr key={index}>
                                 <td style={{ textAlign: "center" }}>
                                   {" "}
                                   {coupon?.faceValue}

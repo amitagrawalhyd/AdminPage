@@ -138,7 +138,7 @@ const Api = Constants.api;
     );
     createdPromise.then(() => {
       console.log("promise:", createdPromise);
-    });
+    }).catch((error) => console.log('error in promise:', error));
 
     const expiringSheet = workbook.addWorksheet("Expiring Coupons");
     expiringSheet.columns = [
@@ -185,7 +185,7 @@ const Api = Constants.api;
     );
     expiringPromise.then(() => {
       console.log("promise:", expiringPromise);
-    });
+    }).catch((error) => console.log(error));
 
     const expiredSheet = workbook.addWorksheet("Expired Coupons");
     expiredSheet.columns = [
@@ -232,14 +232,14 @@ const Api = Constants.api;
     );
     expiredPromise.then(() => {
       console.log("promise:", expiredPromise);
-    });
+    }).catch((error) => console.log('error in promise:', error));
 
     workbook.xlsx.writeBuffer().then((buffer) => {
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
       saveAs(blob, "Coupon Report.xlsx");
-    });
+    }).catch((error) => console.log('error occured while converting to xlsx:', error));
   };
 
   return (
@@ -442,7 +442,7 @@ const Api = Constants.api;
                                 b.createdDate.localeCompare(a.createdDate)
                               )
                               ?.map((coupon) => (
-                                <tr>
+                                <tr key={coupon.couponId}>
                                   <td className="coupon">{coupon.couponId}</td>
                                   <td className="coupon">{coupon.faceValue}</td>
                                   <td className="coupon">
@@ -510,7 +510,7 @@ const Api = Constants.api;
                                 b.createdDate.localeCompare(a.createdDate)
                               )
                               ?.map((coupon) => (
-                                <tr>
+                                <tr key={coupon.couponId}>
                                   <td className="coupon">{coupon.couponId}</td>
                                   <td className="coupon">{coupon.faceValue}</td>
                                   <td className="coupon">
@@ -578,7 +578,7 @@ const Api = Constants.api;
                                 b.createdDate.localeCompare(a.createdDate)
                               )
                               ?.map((coupon) => (
-                                <tr>
+                                <tr key={coupon.couponId}>
                                   <td className="coupon">{coupon.couponId}</td>
                                   <td className="coupon">{coupon.faceValue}</td>
                                   <td className="coupon">

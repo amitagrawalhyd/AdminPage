@@ -204,7 +204,7 @@ const Api = Constants.api;
       
      }}
      disabled={formik.errors.passcode || formik.errors.mobileNumber}
-     class="btn btn-primary align-self-flex-end">Login</button>
+     className="btn btn-primary align-self-flex-end">Login</button>
   </form>
           {/* <div className="login-form">
             <form method="post" onSubmit={handleSubmit}>
